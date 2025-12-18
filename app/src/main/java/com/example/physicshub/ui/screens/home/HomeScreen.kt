@@ -1,13 +1,19 @@
 package com.example.physicshub.ui.screens.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
@@ -15,37 +21,118 @@ import com.example.physicshub.ui.navigation.Destinations
 import com.example.physicshub.ui.theme.PhysicsHubTheme
 
 @Composable
-fun HomeScreen(navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+fun HomeScreen(
+    navController: NavController
+) {
+    Scaffold(
+        topBar = {
+            HomeTopBarPlaceholder(
+                onNotificationClick = {
+                    navController.navigate("notifications")
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(32.dp)
+        ) {
+
+            SectionPlaceholder(
+                title = "Upcoming Event",
+                onClick = { navController.navigate("events") }
+            )
+
+            SectionPlaceholder(
+                title = "Notice Board",
+                onClick = { navController.navigate("notices") }
+            )
+
+            SectionPlaceholder(
+                title = "Equipment Booking",
+                onClick = { navController.navigate("booking") }
+            )
+        }
+    }
+}
+
+@Composable
+fun HomeTopBarPlaceholder(
+    onNotificationClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
 
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Hello,",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "User",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            IconButton(onClick = onNotificationClick) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notifications"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SectionPlaceholder(
+    title: String,
+    onClick: () -> Unit
+) {
+    Column {
         Text(
-            text = "Welcome back",
-            style = MaterialTheme.typography.titleLarge
+            text = title.uppercase(),
+            style = MaterialTheme.typography.labelLarge
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        HomeCard(
-            title = "Upcoming Events",
-            subtitle = "2 events this week",
-            onClick = { navController.navigate(Destinations.Events.route) }
-        )
-
-        HomeCard(
-            title = "Notices",
-            subtitle = "3 unread announcements",
-            onClick = { navController.navigate(Destinations.Notices.route) }
-        )
-
-        HomeCard(
-            title = "Exam Archive",
-            subtitle = "Past papers available",
-            onClick = { navController.navigate(Destinations.Exams.route) }
-        )
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clickable(onClick = onClick),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = "Placeholder",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 

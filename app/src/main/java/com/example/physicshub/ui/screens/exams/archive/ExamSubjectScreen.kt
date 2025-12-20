@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.physicshub.ui.navigation.Destinations
 import com.example.physicshub.ui.theme.PhysicsHubTheme
 
 // ---- Mock data (replace later with database) ----
@@ -89,7 +90,13 @@ fun ExamSubjectScreen(
                     SubjectHeader(
                         title = subject,
                         onClick = {
-                            // Later: navigate to "all courses in subject"
+                            navController.navigate(
+                                Destinations.ExamCourse.route(
+                                    title,
+                                    subject,
+                                    "ALL"
+                                )
+                            )
                         }
                     )
                 }
@@ -98,7 +105,13 @@ fun ExamSubjectScreen(
                     CourseItem(
                         name = course,
                         onClick = {
-                            // Later: navigate to ExamListScreen(course)
+                            navController.navigate(
+                                Destinations.ExamCourse.route(
+                                    title,
+                                    subject,
+                                    course
+                                )
+                            )
                         }
                     )
                 }

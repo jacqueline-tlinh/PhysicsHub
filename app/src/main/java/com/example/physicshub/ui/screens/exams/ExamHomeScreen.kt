@@ -44,18 +44,12 @@ fun ExamHomeScreen(
             icon = Icons.Default.FileUpload,
             title = "Document Upload",
             subtitle = "Upload exam papers for others to review",
-            onClick = {
-                navController.navigate(Destinations.ExamArchive.route)
-            }
         )
 
         ExamFeatureCard(
             icon = Icons.Default.QuestionAnswer,
             title = "Suggestions",
             subtitle = "Request missing exam papers",
-            onClick = {
-                navController.navigate(Destinations.ExamArchive.route)
-            }
         )
     }
 }

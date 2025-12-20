@@ -16,12 +16,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.physicshub.ui.navigation.Destinations
 import com.example.physicshub.ui.theme.PhysicsHubTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExamArchiveRootScreen(navController: NavController) {
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -57,7 +57,12 @@ fun ExamArchiveRootScreen(navController: NavController) {
                     "Natural Sciences",
                     "Social Sciences",
                     "Miscellaneous"
-                )
+                ),
+                onItemClick = { division ->
+                    navController.navigate(
+                        Destinations.ExamDivision.route(division)
+                    )
+                }
             )
 
             ExamSection(
@@ -65,16 +70,23 @@ fun ExamArchiveRootScreen(navController: NavController) {
                 items = listOf(
                     "Physics",
                     "Engineering"
-                )
+                ),
+                onItemClick = { division ->
+                    navController.navigate(
+                        Destinations.ExamDivision.route(division)
+                    )
+                }
             )
         }
     }
 }
 
+
 @Composable
 private fun ExamSection(
     title: String,
-    items: List<String>
+    items: List<String>,
+    onItemClick: (String) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
@@ -90,19 +102,26 @@ private fun ExamSection(
             modifier = Modifier.heightIn(max = 240.dp)
         ) {
             items(items) { item ->
-                ExamCategoryCard(title = item)
+                ExamCategoryCard(
+                    title = item,
+                    onClick = { onItemClick(item) }
+                )
             }
         }
     }
 }
 
+
 @Composable
-private fun ExamCategoryCard(title: String) {
+private fun ExamCategoryCard(
+    title: String,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(96.dp)
-            .clickable { /* later navigation */ },
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -121,6 +140,7 @@ private fun ExamCategoryCard(title: String) {
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable

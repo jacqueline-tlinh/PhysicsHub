@@ -26,17 +26,16 @@ import com.example.physicshub.R
 
 @Composable
 fun LoginScreen(
-    navController: NavController,
+    onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel = viewModel()
-) {
+)
+ {
     val uiState by viewModel.uiState
 
     // React to login success
     LaunchedEffect(uiState.isLoginSuccess) {
         if (uiState.isLoginSuccess) {
-            navController.navigate("main") {
-                popUpTo(Destinations.Login.route) { inclusive = true }
-            }
+            onLoginSuccess()
             viewModel.consumeLoginSuccess()
         }
     }
@@ -139,6 +138,12 @@ fun LoginScreen(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+
+            TextButton(
+                onClick = viewModel::devLogin
+            ) {
+                Text("DEV: Skip login")
+            }
         }
     }
 }
@@ -148,6 +153,8 @@ fun LoginScreen(
 @Composable
 fun LoginScreenPreview() {
     PhysicsHubTheme {
-        LoginScreen(navController = rememberNavController())
+        LoginScreen(
+            onLoginSuccess = {}
+        )
     }
 }

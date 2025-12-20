@@ -37,4 +37,10 @@ class LoginViewModel : ViewModel() {
         // Prevent repeated navigation on recomposition
         _uiState.value = _uiState.value.copy(isLoginSuccess = false)
     }
+
+    fun devLogin() {
+        _uiState.value = _uiState.value.copy(
+            isLoginSuccess = true
+        )
+    }
 }

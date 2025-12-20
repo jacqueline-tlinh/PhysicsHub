@@ -1,4 +1,4 @@
-package com.example.physicshub.ui.screens.exams
+package com.example.physicshub.ui.screens.bookiing
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,19 +13,19 @@ import androidx.navigation.compose.rememberNavController
 import com.example.physicshub.ui.theme.PhysicsHubTheme
 
 @Composable
-fun ExamArchiveScreen(navController: NavController) {
+fun BookingScreen(navController: NavController) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text("Exam Archive", style = MaterialTheme.typography.titleLarge)
+        Text("Booking", style = MaterialTheme.typography.titleLarge)
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ExamArchivePreview() {
+fun BookingScreenPreview() {
     PhysicsHubTheme {
-        ExamArchiveScreen(navController = rememberNavController())
+        BookingScreen(navController = rememberNavController())
     }
 }

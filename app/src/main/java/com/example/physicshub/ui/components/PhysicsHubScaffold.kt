@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.example.physicshub.ui.navigation.BottomNavItem
+import com.example.physicshub.ui.navigation.Destinations
 import com.example.physicshub.ui.theme.PhysicsHubTheme
 
 @Composable
@@ -22,34 +23,45 @@ fun PhysicsHubScaffold(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val items = listOf(
-        BottomNavItem("home", "Home", Icons.Default.Home),
-        BottomNavItem("events", "Events", Icons.Default.Event),
-        BottomNavItem("notices", "Notices", Icons.Default.Notifications),
-        BottomNavItem("exams", "Exams", Icons.Default.Description)
+    val bottomBarRoutes = listOf(
+        Destinations.Home.route,
+        Destinations.Events.route,
+        Destinations.Notices.route,
+        Destinations.Booking.route,
+        Destinations.Exams.route
     )
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                items.forEach { item ->
-                    NavigationBarItem(
-                        selected = currentRoute == item.route,
-                        onClick = {
-                            if (currentRoute != item.route) {
-                                navController.navigate(item.route) {
-                                    popUpTo("home")
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        icon = {
-                            Icon(item.icon, contentDescription = item.label)
-                        },
-                        label = {
-                            Text(item.label)
-                        }
+            if (currentRoute in bottomBarRoutes) {
+                NavigationBar {
+                    val items = listOf(
+                        BottomNavItem("home", "Home", Icons.Default.Home),
+                        BottomNavItem("events", "Events", Icons.Default.Event),
+                        BottomNavItem("notices", "Notices", Icons.Default.Notifications),
+                        BottomNavItem("booking", "Booking", Icons.Default.BookOnline),
+                        BottomNavItem("exams", "Exams", Icons.Default.Description)
                     )
+
+                    items.forEach { item ->
+                        NavigationBarItem(
+                            selected = currentRoute == item.route,
+                            onClick = {
+                                if (currentRoute != item.route) {
+                                    navController.navigate(item.route) {
+                                        popUpTo(Destinations.Home.route)
+                                        launchSingleTop = true
+                                    }
+                                }
+                            },
+                            icon = {
+                                Icon(item.icon, contentDescription = item.label)
+                            },
+                            label = {
+                                Text(item.label)
+                            }
+                        )
+                    }
                 }
             }
         },

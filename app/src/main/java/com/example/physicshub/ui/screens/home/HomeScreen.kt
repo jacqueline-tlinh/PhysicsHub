@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.example.physicshub.ui.components.PhysicsHubScaffold
 import com.example.physicshub.ui.navigation.Destinations
 import com.example.physicshub.ui.theme.PhysicsHubTheme
 
@@ -160,8 +161,13 @@ fun HomeCard(
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview() {
+fun HomeWithBottomNavPreview() {
     PhysicsHubTheme {
-        HomeScreen(navController = rememberNavController())
+        val navController = rememberNavController()
+        PhysicsHubScaffold(navController = navController) { padding ->
+            HomeScreen(
+                navController = navController
+            )
+        }
     }
 }

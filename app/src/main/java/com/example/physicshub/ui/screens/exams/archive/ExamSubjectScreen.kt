@@ -51,8 +51,7 @@ fun ExamSubjectScreen(
                 title = {
                     Text(
                         text = title,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        style = MaterialTheme.typography.displayLarge,
                     )
                 },
                 navigationIcon = {
@@ -127,7 +126,7 @@ private fun SubjectHeader(
 ) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.titleLarge,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)

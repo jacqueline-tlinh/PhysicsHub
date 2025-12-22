@@ -99,7 +99,7 @@ private fun ExamFeatureCard(
             Column {
                 Text(
                     title,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleLarge
                 )
                 Text(
                     subtitle,

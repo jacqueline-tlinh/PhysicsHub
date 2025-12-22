@@ -6,9 +6,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
@@ -19,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,7 +79,8 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
 
@@ -207,7 +212,8 @@ fun SectionPlaceholder(
     Column {
         Text(
             text = title,
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -256,7 +262,7 @@ fun NoticeBoardSection(
         ) {
             Text(
                 text = Strings.noticeBoard,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold
             )
 
@@ -381,7 +387,7 @@ fun NoticeSliderCard(
 
 
             Icon(
-                imageVector = Icons.Default.MenuBook,
+                imageVector = Icons.AutoMirrored.Filled.MenuBook,
                 contentDescription = null,
                 tint = notice.category.iconTint,
                 modifier = Modifier
@@ -392,26 +398,26 @@ fun NoticeSliderCard(
     }
 }
 
-@Composable
-fun HomeCard(
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
+//@Composable
+//fun HomeCard(
+//    title: String,
+//    subtitle: String,
+//    onClick: () -> Unit
+//) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 8.dp)
+//            .clickable(onClick = onClick),
+//        shape = RoundedCornerShape(12.dp)
+//    ) {
+//        Column(modifier = Modifier.padding(16.dp)) {
+//            Text(title, style = MaterialTheme.typography.titleMedium)
+//            Spacer(modifier = Modifier.height(4.dp))
+//            Text(subtitle, style = MaterialTheme.typography.bodyMedium)
+//        }
+//    }
+//}
 
 
 @Preview(showBackground = true)

@@ -128,7 +128,7 @@ fun ExamCourseScreen(
             // Course name (centered, prominent)
             Text(
                 text = courseName,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.displayLarge,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 24.dp)
             )

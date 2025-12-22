@@ -19,17 +19,39 @@ val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = LexendDeca,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp
+        fontSize = 18.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = LexendDeca,
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = LexendDeca,
+        fontWeight = FontWeight.Normal,
+        fontSize = 13.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.25.sp
     ),
     titleLarge = TextStyle(
         fontFamily = LexendDeca,
         fontWeight = FontWeight.Bold,
-        fontSize = 40.sp
+        fontSize = 24.sp
+    ),
+    titleMedium = TextStyle(
+        fontFamily = LexendDeca,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp
     ),
     labelLarge = TextStyle(
         fontFamily = LexendDeca,
         fontWeight = FontWeight.Medium,
-        fontSize = 14.sp
+        fontSize = 16.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = LexendDeca,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp
     ),
     labelSmall = TextStyle(
         fontFamily = LexendDeca,
@@ -42,5 +64,10 @@ val Typography = Typography(
         fontFamily = LexendDeca,
         fontWeight = FontWeight.SemiBold,
         fontSize = 22.sp
+    ),
+    displayMedium = TextStyle(
+        fontFamily = LexendDeca,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp
     ),
 )

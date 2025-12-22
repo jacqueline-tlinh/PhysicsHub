@@ -2,6 +2,8 @@ package com.example.physicshub.ui.screens.exams.archive
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
@@ -33,7 +35,7 @@ fun ExamPreviewScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Exam Preview") },
+                title = { Text("Preview",style = MaterialTheme.typography.displayMedium) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -65,6 +67,7 @@ fun ExamPreviewScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -72,7 +75,7 @@ fun ExamPreviewScreen(
             // Course title
             Text(
                 text = courseName,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.displayMedium,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )

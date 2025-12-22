@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MarkEmailRead
+import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -94,8 +96,15 @@ fun NoticeScreen(navController: NavController) {
                     NoticeListCard(
                         notice = notice,
                         onClick = {
+                            // Future: navigate to notice details
+                        },
+                        onToggleReadState = {
                             scope.launch {
-                                repository.markAsRead(notice.id)
+                                if (notice.isRead) {
+                                    repository.markAsUnread(notice.id)
+                                } else {
+                                    repository.markAsRead(notice.id)
+                                }
                             }
                         }
                     )
@@ -174,6 +183,7 @@ fun ReadUnreadToggle(
 fun NoticeListCard(
     notice: Notice,
     onClick: () -> Unit,
+    onToggleReadState: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -187,7 +197,8 @@ fun NoticeListCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
         ) {
             Column(
                 modifier = Modifier.weight(1f),
@@ -235,14 +246,32 @@ fun NoticeListCard(
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MenuBook,
+                    contentDescription = null,
+                    tint = notice.category.iconTint,
+                    modifier = Modifier.size(24.dp)
+                )
 
-            Icon(
-                imageVector = Icons.Default.MenuBook,
-                contentDescription = null,
-                tint = notice.category.iconTint,
-                modifier = Modifier.size(24.dp)
-            )
+                IconButton(
+                    onClick = onToggleReadState,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (notice.isRead)
+                            Icons.Default.MarkEmailUnread
+                        else
+                            Icons.Default.MarkEmailRead,
+                        contentDescription = if (notice.isRead) "Mark as unread" else "Mark as read",
+                        tint = if (notice.isRead) Color.Gray else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -261,7 +290,8 @@ fun NoticeListCardPreview() {
     PhysicsHubTheme {
         NoticeListCard(
             notice = mockNotices[0],
-            onClick = {}
+            onClick = {},
+            onToggleReadState = {}
         )
     }
 }

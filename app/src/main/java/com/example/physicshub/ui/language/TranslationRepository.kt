@@ -26,7 +26,7 @@ class TranslationRepository(private val context: Context) {
         private val ENGLISH_TRANSLATIONS = stringPreferencesKey("english_translations")
         private val VIETNAMESE_TRANSLATIONS = stringPreferencesKey("vietnamese_translations")
         private val LAST_FETCH_TIME = stringPreferencesKey("last_fetch_time")
-        private const val TRANSLATIONS_URL = "https://raw.githubusercontent.com/jacqueline-tlinh/PhysicsHub/main/backend/translations.json"
+        private const val TRANSLATIONS_URL = "https://raw.githubusercontent.com/jacqueline-tlinh/PhysicsHub/main/translations.json"
         private const val CACHE_DURATION = 24 * 60 * 60 * 1000L
 
         @Volatile

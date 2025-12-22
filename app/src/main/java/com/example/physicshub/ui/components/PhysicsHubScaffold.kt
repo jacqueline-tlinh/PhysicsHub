@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import com.example.physicshub.ui.language.Strings
 import com.example.physicshub.ui.navigation.BottomNavItem
 import com.example.physicshub.ui.navigation.Destinations
 import com.example.physicshub.ui.theme.PhysicsHubTheme
@@ -36,11 +37,11 @@ fun PhysicsHubScaffold(
             if (currentRoute in bottomBarRoutes) {
                 NavigationBar {
                     val items = listOf(
-                        BottomNavItem("home", "Home", Icons.Default.Home),
-                        BottomNavItem("events", "Events", Icons.Default.Event),
-                        BottomNavItem("notices", "Notices", Icons.Default.Notifications),
-                        BottomNavItem("booking", "Booking", Icons.Default.BookOnline),
-                        BottomNavItem("exams", "Exams", Icons.Default.Description)
+                        BottomNavItem("home", Strings.navHome, Icons.Default.Home),
+                        BottomNavItem("events", Strings.navEvents, Icons.Default.Event),
+                        BottomNavItem("notices", Strings.navNotices, Icons.Default.Notifications),
+                        BottomNavItem("booking", Strings.navBooking, Icons.Default.BookOnline),
+                        BottomNavItem("exams", Strings.navExams, Icons.Default.Description)
                     )
 
                     items.forEach { item ->

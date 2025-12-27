@@ -10,12 +10,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -126,11 +127,11 @@ private fun SubjectHeader(
 ) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleLarge,
+        style = MaterialTheme.typography.labelLarge,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(top = 16.dp, bottom = 4.dp)
+            .padding(top = 20.dp, bottom = 8.dp)
     )
 }
 
@@ -139,15 +140,42 @@ private fun CourseItem(
     name: String,
     onClick: () -> Unit
 ) {
-    ListItem(
-        headlineContent = { Text(name) },
+    val pastelGreen = Color(0xFF277795)
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-    )
-    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-}
+            .heightIn(min = 56.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = pastelGreen.copy(alpha = 0.10f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
+            // Course name
+            Text(
+                text = name,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            // Forward indicator
+            Icon(
+                imageVector = Icons.Filled.ChevronRight,
+                contentDescription = null
+            )
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable

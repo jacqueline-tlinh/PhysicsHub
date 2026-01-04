@@ -5,6 +5,8 @@ import com.google.firebase.Timestamp
 data class ExamPaper(
     val id: String = "",
 
+    val division: String = "",
+    val category: String = "",
     val course: String = "",
     val examType: String = "",
     val semester: String = "",

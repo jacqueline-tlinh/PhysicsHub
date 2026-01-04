@@ -49,9 +49,6 @@ class ExamUploadViewModel(
     private val _examType = MutableStateFlow<ExamType?>(null)
     val examType: StateFlow<ExamType?> = _examType.asStateFlow()
 
-    private val _semester = MutableStateFlow<Semester?>(null)
-    val semester: StateFlow<Semester?> = _semester.asStateFlow()
-
     private val _year = MutableStateFlow<Int?>(null)
     val year: StateFlow<Int?> = _year.asStateFlow()
     // Get all unique division titles from metadata
@@ -107,14 +104,13 @@ class ExamUploadViewModel(
             category,
             course,
             examType,
-            semester,
             year
-        ) { values ->
+        ) { values: Array<out Any?> ->
             values.all { it != null }
         }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            false
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
         )
 
     // ---------- SELECTORS ----------
@@ -135,10 +131,6 @@ class ExamUploadViewModel(
 
     fun selectExamType(value: ExamType) {
         _examType.value = value
-    }
-
-    fun selectSemester(value: Semester) {
-        _semester.value = value
     }
 
     fun selectYear(value: Int) {
@@ -168,7 +160,6 @@ class ExamUploadViewModel(
         val categoryVal = category.value ?: return
         val courseVal = course.value ?: return
         val examTypeVal = examType.value ?: return
-        val semesterVal = semester.value ?: return
         val yearVal = year.value ?: return
 
         viewModelScope.launch {
@@ -183,7 +174,47 @@ class ExamUploadViewModel(
                 category = categoryVal,
                 course = courseVal,
                 examType = examTypeVal.name,
-                semester = semesterVal.name,
+                year = yearVal,
+
+                uploadedBy = uploadedBy,
+                role = role
+            )
+
+            _uploadState.value =
+                result.fold(
+                    onSuccess = { UploadState.Success },
+                    onFailure = {
+                        UploadState.Error(it.message ?: "Upload failed")
+                    }
+                )
+        }
+    }
+
+    fun uploadMultipleExams(
+        fileUris: List<Uri>,
+        fileType: FileType,
+        fileSizes: List<Long>,
+        uploadedBy: String,
+        role: String
+    ) {
+        val divisionVal = division.value ?: return
+        val categoryVal = category.value ?: return
+        val courseVal = course.value ?: return
+        val examTypeVal = examType.value ?: return
+        val yearVal = year.value ?: return
+
+        viewModelScope.launch {
+            _uploadState.value = UploadState.Uploading
+
+            val result = uploadRepository.uploadMultipleExamPapers(
+                fileUris = fileUris,
+                fileType = fileType,
+                fileSizes = fileSizes,
+
+                division = divisionVal,
+                category = categoryVal,
+                course = courseVal,
+                examType = examTypeVal.name,
                 year = yearVal,
 
                 uploadedBy = uploadedBy,

@@ -3,12 +3,16 @@ package com.example.physicshub.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.physicshub.ui.components.PhysicsHubScaffold
 import com.example.physicshub.ui.screens.bookiing.BookingScreen
-import com.example.physicshub.ui.screens.events.EventScreen
+import com.example.physicshub.ui.screens.events.EventTrackerScreen
+import com.example.physicshub.ui.screens.events.EventCreateScreen
+import com.example.physicshub.ui.screens.events.EventRegistrationScreen
+import com.example.physicshub.ui.screens.events.viewmodel.EventViewModel
 import com.example.physicshub.ui.screens.exams.ExamHomeScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamArchiveRootScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamCourseScreen
@@ -22,6 +26,8 @@ import com.example.physicshub.ui.screens.notices.NoticeScreen
 @Composable
 fun PhysicsHubNavGraph() {
     val navController = rememberNavController()
+
+    val eventViewModel: EventViewModel = viewModel()
 
     PhysicsHubScaffold(navController = navController) { padding ->
 
@@ -46,7 +52,29 @@ fun PhysicsHubNavGraph() {
             }
 
             composable(Destinations.Events.route) {
-                EventScreen(navController)
+                EventTrackerScreen(navController, eventViewModel)
+            }
+
+            composable(Destinations.EventTracker.route) {
+                EventTrackerScreen(navController, eventViewModel)
+            }
+
+            composable(Destinations.EventCreate.route) {
+                EventCreateScreen(navController, eventViewModel)
+            }
+
+            composable(
+                route = Destinations.EventRegistration.route,
+                arguments = listOf(
+                    navArgument("eventId") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+                EventRegistrationScreen(
+                    navController = navController,
+                    eventId = eventId,
+                    viewModel = eventViewModel
+                )
             }
 
             composable(Destinations.Notices.route) {

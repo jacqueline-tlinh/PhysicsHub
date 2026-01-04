@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "507606265096",
+    "project_id": "physicshub-62b17",
+    "storage_bucket": "physicshub-62b17.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:507606265096:android:7a43cc10082328614c90bd",
+        "android_client_info": {
+          "package_name": "com.example.physicshub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2B27-GZrAVYl_EH_Fs8skn1kDh01wgsM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

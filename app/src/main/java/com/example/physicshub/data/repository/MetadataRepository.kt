@@ -15,7 +15,16 @@ class MetadataRepository(
             .await()
 
         return snapshot.documents.mapNotNull { doc ->
-            doc.toObject(ExamMetadata::class.java)
+            try {
+                val obj = doc.toObject(ExamMetadata::class.java)
+                println("METADATA DOC OK: ${doc.id}")
+                obj
+            } catch (e: Exception) {
+                println("METADATA DOC FAILED: ${doc.id}")
+                e.printStackTrace()
+                null
+            }
         }
     }
+
 }

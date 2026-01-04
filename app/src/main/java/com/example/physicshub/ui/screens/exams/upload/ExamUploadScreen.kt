@@ -4,37 +4,11 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -42,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.physicshub.data.model.ExamType
-import com.example.physicshub.data.model.Semester
+import com.example.physicshub.data.model.FileType
 import com.example.physicshub.util.FileValidation
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,8 +27,8 @@ fun ExamUploadScreen(
     val context = LocalContext.current
     val viewModel: ExamUploadViewModel = viewModel()
 
-    var selectedFile by remember { mutableStateOf<Uri?>(null) }
-    var selectedFileName by remember { mutableStateOf<String?>(null) }
+    var selectedFiles by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var selectedFileNames by remember { mutableStateOf<List<String>>(emptyList()) }
 
     val metadata by viewModel.metadata.collectAsState()
     val loadingMetadata by viewModel.loadingMetadata.collectAsState()
@@ -70,38 +44,30 @@ fun ExamUploadScreen(
     val selectedCategory by viewModel.category.collectAsState()
     val selectedCourse by viewModel.course.collectAsState()
     val selectedExamType by viewModel.examType.collectAsState()
-    val selectedSemester by viewModel.semester.collectAsState()
     val selectedYear by viewModel.year.collectAsState()
 
     var divisionExpanded by remember { mutableStateOf(false) }
     var categoryExpanded by remember { mutableStateOf(false) }
     var courseExpanded by remember { mutableStateOf(false) }
     var examTypeExpanded by remember { mutableStateOf(false) }
-    var semesterExpanded by remember { mutableStateOf(false) }
     var yearExpanded by remember { mutableStateOf(false) }
 
     val resolver = context.contentResolver
-    val mimeType = selectedFile?.let { resolver.getType(it) }
-    val fileType = mimeType?.let { FileValidation.getFileType(it) }
 
-    val fileSize = selectedFile?.let {
-        resolver.openFileDescriptor(it, "r")?.statSize ?: 0L
-    } ?: 0L
-
-    val filePickerLauncher =
+    // PDF Picker (single file)
+    val pdfPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument()
         ) { uri ->
             if (uri != null) {
                 if (FileValidation.isValidFile(context, uri)) {
-                    selectedFile = uri
-                    // Get filename from URI
+                    selectedFiles = listOf(uri)
                     val cursor = resolver.query(uri, null, null, null, null)
                     cursor?.use {
                         if (it.moveToFirst()) {
                             val displayNameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
                             if (displayNameIndex != -1) {
-                                selectedFileName = it.getString(displayNameIndex)
+                                selectedFileNames = listOf(it.getString(displayNameIndex))
                             }
                         }
                     }
@@ -110,6 +76,45 @@ fun ExamUploadScreen(
                         context,
                         "Invalid file type or file exceeds 10MB",
                         Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
+    // Image Picker (multiple files)
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenMultipleDocuments()
+        ) { uris ->
+            if (uris.isNotEmpty()) {
+                val validUris = uris.filter { FileValidation.isValidFile(context, it) }
+                if (validUris.isEmpty()) {
+                    Toast.makeText(
+                        context,
+                        "No valid images selected (max 10MB each)",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@rememberLauncherForActivityResult
+                }
+
+                selectedFiles = validUris
+                selectedFileNames = validUris.mapNotNull { uri ->
+                    val cursor = resolver.query(uri, null, null, null, null)
+                    cursor?.use {
+                        if (it.moveToFirst()) {
+                            val displayNameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                            if (displayNameIndex != -1) {
+                                it.getString(displayNameIndex)
+                            } else null
+                        } else null
+                    }
+                }
+
+                if (validUris.size < uris.size) {
+                    Toast.makeText(
+                        context,
+                        "Some files were invalid and skipped",
+                        Toast.LENGTH_SHORT
                     ).show()
                 }
             }
@@ -125,9 +130,10 @@ fun ExamUploadScreen(
             }
 
             is ExamUploadViewModel.UploadState.Error -> {
+                val errorMsg = (uploadState as ExamUploadViewModel.UploadState.Error).message
                 Toast.makeText(
                     context,
-                    (uploadState as ExamUploadViewModel.UploadState.Error).message,
+                    errorMsg,
                     Toast.LENGTH_LONG
                 ).show()
                 viewModel.resetUploadState()
@@ -330,46 +336,113 @@ fun ExamUploadScreen(
 
                 Spacer(Modifier.height(8.dp))
 
-                // File Selection Button
-                OutlinedButton(
-                    onClick = {
-                        filePickerLauncher.launch(
-                            arrayOf(
-                                "application/pdf",
-                                "image/jpeg",
-                                "image/png"
-                            )
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                // File Selection Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        if (selectedFileName != null) {
-                            "Selected: $selectedFileName"
-                        } else {
-                            "Select PDF or Image"
+                    OutlinedButton(
+                        onClick = {
+                            pdfPickerLauncher.launch(arrayOf("application/pdf"))
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Select PDF")
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            imagePickerLauncher.launch(
+                                arrayOf("image/jpeg", "image/png")
+                            )
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Select Images")
+                    }
+                }
+
+                // Display selected files
+                if (selectedFileNames.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Selected files (${selectedFileNames.size}):",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                            selectedFileNames.forEach { name ->
+                                Text(
+                                    text = "• $name",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
-                    )
+                    }
                 }
 
                 // Upload Button
                 Button(
-                    enabled = selectedFile != null && canUpload && uploadState !is ExamUploadViewModel.UploadState.Uploading,
+                    enabled = selectedFiles.isNotEmpty() && canUpload && uploadState !is ExamUploadViewModel.UploadState.Uploading,
                     onClick = {
-                        viewModel.uploadExam(
-                            fileUri = selectedFile!!,
-                            fileType = fileType!!,
-                            fileSize = fileSize,
-                            uploadedBy = "demoUser",
-                            role = "student"
-                        )
+                        println("🚀 Upload button clicked")
+                        println("📋 Selected files: ${selectedFiles.size}")
+                        println("📊 Can upload: $canUpload")
+                        println("🏷️ Division: $selectedDivision")
+                        println("🏷️ Category: $selectedCategory")
+                        println("🏷️ Course: $selectedCourse")
+                        println("🏷️ Exam Type: $selectedExamType")
+                        println("🏷️ Year: $selectedYear")
+
+                        val resolver = context.contentResolver
+
+                        // Get file type from first file
+                        val firstMimeType = resolver.getType(selectedFiles.first())
+                        println("📎 MIME type: $firstMimeType")
+                        val fileType = firstMimeType?.let { FileValidation.getFileType(it) } ?: FileType.PDF
+                        println("📄 File type: $fileType")
+
+                        if (selectedFiles.size == 1) {
+                            // Single file upload
+                            println("📤 Starting single file upload")
+                            val file = selectedFiles.first()
+                            val fileSize = resolver.openFileDescriptor(file, "r")?.statSize ?: 0L
+                            println("💾 File size: $fileSize bytes")
+
+                            viewModel.uploadExam(
+                                fileUri = file,
+                                fileType = fileType,
+                                fileSize = fileSize,
+                                uploadedBy = "demoUser",
+                                role = "student"
+                            )
+                        } else {
+                            // Multiple files upload
+                            println("📤 Starting multiple files upload")
+                            val fileSizes = selectedFiles.map { uri ->
+                                resolver.openFileDescriptor(uri, "r")?.statSize ?: 0L
+                            }
+                            println("💾 Total files: ${fileSizes.size}, sizes: $fileSizes")
+
+                            viewModel.uploadMultipleExams(
+                                fileUris = selectedFiles,
+                                fileType = fileType,
+                                fileSizes = fileSizes,
+                                uploadedBy = "demoUser",
+                                role = "student"
+                            )
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         when (uploadState) {
-                            ExamUploadViewModel.UploadState.Uploading -> "Uploading..."
-                            else -> "Upload"
+                            ExamUploadViewModel.UploadState.Uploading -> "Uploading ${selectedFiles.size} file(s)..."
+                            else -> "Upload ${selectedFiles.size} file(s)"
                         }
                     )
                 }

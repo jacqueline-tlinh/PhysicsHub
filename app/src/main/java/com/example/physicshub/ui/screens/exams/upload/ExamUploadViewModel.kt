@@ -10,10 +10,6 @@ import com.example.physicshub.data.model.Semester
 import com.example.physicshub.data.repository.ExamUploadRepository
 import com.example.physicshub.data.repository.MetadataRepository
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ExamUploadViewModel(
@@ -22,12 +18,11 @@ class ExamUploadViewModel(
 ) : ViewModel() {
 
     // ---------- METADATA ----------
-
     private val _metadata = MutableStateFlow<List<ExamMetadata>>(emptyList())
-    val metadata: StateFlow<List<ExamMetadata>> = _metadata
+    val metadata: StateFlow<List<ExamMetadata>> = _metadata.asStateFlow()
 
     private val _loadingMetadata = MutableStateFlow(true)
-    val loadingMetadata: StateFlow<Boolean> = _loadingMetadata
+    val loadingMetadata: StateFlow<Boolean> = _loadingMetadata.asStateFlow()
 
     init {
         loadMetadata()
@@ -42,31 +37,31 @@ class ExamUploadViewModel(
     }
 
     // ---------- SELECTION STATE ----------
-
     private val _division = MutableStateFlow<String?>(null)
-    val division: StateFlow<String?> = _division
+    val division: StateFlow<String?> = _division.asStateFlow()
 
     private val _category = MutableStateFlow<String?>(null)
-    val category: StateFlow<String?> = _category
+    val category: StateFlow<String?> = _category.asStateFlow()
 
     private val _course = MutableStateFlow<String?>(null)
-    val course: StateFlow<String?> = _course
+    val course: StateFlow<String?> = _course.asStateFlow()
 
     private val _examType = MutableStateFlow<ExamType?>(null)
-    val examType: StateFlow<ExamType?> = _examType
+    val examType: StateFlow<ExamType?> = _examType.asStateFlow()
 
     private val _semester = MutableStateFlow<Semester?>(null)
-    val semester: StateFlow<Semester?> = _semester
+    val semester: StateFlow<Semester?> = _semester.asStateFlow()
 
     private val _year = MutableStateFlow<Int?>(null)
-    val year: StateFlow<Int?> = _year
+    val year: StateFlow<Int?> = _year.asStateFlow()
 
     // ---------- DERIVED LISTS (FOR DROPDOWNS) ----------
-
     val divisions: StateFlow<List<String>> =
         metadata
-            .map { list: List<ExamMetadata> ->
-                list.map { it.division }
+            .map { exams ->
+                exams.flatMap { exam ->
+                    exam.divisions.map { it.name }
+                }
             }
             .stateIn(
                 viewModelScope,
@@ -75,43 +70,39 @@ class ExamUploadViewModel(
             )
 
     val categories: StateFlow<List<String>> =
-        combine(
-            metadata,
-            division
-        ) { data: List<ExamMetadata>, selectedDivision: String? ->
-            data
-                .find { it.division == selectedDivision }
+        combine(metadata, division) { exams, selectedDivision ->
+            if (selectedDivision == null) return@combine emptyList()
+
+            exams
+                .flatMap { it.divisions }
+                .find { it.name == selectedDivision }
                 ?.categories
                 ?.map { it.name }
                 ?: emptyList()
-        }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5_000),
-                emptyList()
-            )
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            emptyList()
+        )
 
     val courses: StateFlow<List<String>> =
-        combine(
-            metadata,
-            division,
-            category
-        ) { data: List<ExamMetadata>, d: String?, c: String? ->
-            data
-                .find { it.division == d }
+        combine(metadata, division, category) { exams, d, c ->
+            if (d == null || c == null) return@combine emptyList()
+
+            exams
+                .flatMap { it.divisions }
+                .find { it.name == d }
                 ?.categories
                 ?.find { it.name == c }
                 ?.courses
                 ?: emptyList()
-        }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5_000),
-                emptyList()
-            )
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            emptyList()
+        )
 
     // ---------- VALIDATION ----------
-
     val canUpload: StateFlow<Boolean> =
         combine(
             division,
@@ -129,7 +120,6 @@ class ExamUploadViewModel(
         )
 
     // ---------- SELECTORS ----------
-
     fun selectDivision(value: String) {
         _division.value = value
         _category.value = null
@@ -158,7 +148,6 @@ class ExamUploadViewModel(
     }
 
     // ---------- UPLOAD STATE ----------
-
     sealed interface UploadState {
         object Idle : UploadState
         object Uploading : UploadState
@@ -167,10 +156,9 @@ class ExamUploadViewModel(
     }
 
     private val _uploadState = MutableStateFlow<UploadState>(UploadState.Idle)
-    val uploadState: StateFlow<UploadState> = _uploadState
+    val uploadState: StateFlow<UploadState> = _uploadState.asStateFlow()
 
     // ---------- UPLOAD ----------
-
     fun uploadExam(
         fileUri: Uri,
         fileType: FileType,
@@ -178,6 +166,13 @@ class ExamUploadViewModel(
         uploadedBy: String,
         role: String
     ) {
+        val divisionVal = division.value ?: return
+        val categoryVal = category.value ?: return
+        val courseVal = course.value ?: return
+        val examTypeVal = examType.value ?: return
+        val semesterVal = semester.value ?: return
+        val yearVal = year.value ?: return
+
         viewModelScope.launch {
             _uploadState.value = UploadState.Uploading
 
@@ -186,12 +181,12 @@ class ExamUploadViewModel(
                 fileType = fileType,
                 fileSize = fileSize,
 
-                division = division.value!!,
-                category = category.value!!,
-                course = course.value!!,
-                examType = examType.value!!.name,
-                semester = semester.value!!.name,
-                year = year.value!!,
+                division = divisionVal,
+                category = categoryVal,
+                course = courseVal,
+                examType = examTypeVal.name,
+                semester = semesterVal.name,
+                year = yearVal,
 
                 uploadedBy = uploadedBy,
                 role = role

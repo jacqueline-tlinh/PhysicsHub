@@ -52,6 +52,14 @@ fun ExamUploadScreen(
 
     val metadata by viewModel.metadata.collectAsState()
     val loadingMetadata by viewModel.loadingMetadata.collectAsState()
+
+    LaunchedEffect(metadata) {
+        println("EXAM METADATA FROM FIREBASE:")
+        metadata.forEach {
+            println(it)
+        }
+    }
+
     val uploadState by viewModel.uploadState.collectAsState()
     val canUpload by viewModel.canUpload.collectAsState()
 
@@ -59,7 +67,7 @@ fun ExamUploadScreen(
     val mimeType = selectedFile?.let { resolver.getType(it) }
     val fileType = mimeType?.let { FileValidation.getFileType(it) }
 
-    val subject by viewModel.subject.collectAsState()
+    val subject by viewModel.course.collectAsState()
 
     val course by viewModel.course.collectAsState()
 

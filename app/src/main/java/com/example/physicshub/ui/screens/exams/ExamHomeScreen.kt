@@ -64,7 +64,7 @@ fun ExamHomeScreen(
             title = "Upload Papers",
             subtitle = "Contribute exam papers for others to review",
             containerColor = Color(0xFFE8F5E9),
-            enabled = false
+            onClick = { navController.navigate(Destinations.ExamUpload.route) }
         )
 
         // Recently viewed

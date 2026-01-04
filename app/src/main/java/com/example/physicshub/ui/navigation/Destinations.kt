@@ -37,4 +37,12 @@ sealed class Destinations(val route: String) {
     }
 
     object ExamUpload : Destinations("exam_upload")
+
+    object EventTracker : Destinations("event_tracker")
+
+    object EventCreate : Destinations("event_create")
+
+    object EventRegistration : Destinations("event_registration/{eventId}") {
+        fun route(eventId: String) = "event_registration/$eventId"
+    }
 }

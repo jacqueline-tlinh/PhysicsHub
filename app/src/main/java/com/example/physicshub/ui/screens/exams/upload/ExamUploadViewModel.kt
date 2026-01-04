@@ -54,52 +54,50 @@ class ExamUploadViewModel(
 
     private val _year = MutableStateFlow<Int?>(null)
     val year: StateFlow<Int?> = _year.asStateFlow()
-
-    // ---------- DERIVED LISTS (FOR DROPDOWNS) ----------
+    // Get all unique division titles from metadata
     val divisions: StateFlow<List<String>> =
         metadata
             .map { exams ->
-                exams.flatMap { exam ->
-                    exam.divisions.map { it.name }
-                }
+                exams.map { it.title }.distinct()
             }
             .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(5_000),
-                emptyList()
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
             )
 
+    // Get categories for selected division
     val categories: StateFlow<List<String>> =
         combine(metadata, division) { exams, selectedDivision ->
             if (selectedDivision == null) return@combine emptyList()
 
             exams
-                .flatMap { it.divisions }
-                .find { it.name == selectedDivision }
+                .find { it.title == selectedDivision }
                 ?.categories
                 ?.map { it.name }
                 ?: emptyList()
         }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            emptyList()
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
         )
 
+    // Get courses for selected division and category
     val courses: StateFlow<List<String>> =
         combine(metadata, division, category) { exams, d, c ->
             if (d == null || c == null) return@combine emptyList()
 
             exams
-                .flatMap { it.divisions }
-                .find { it.name == d }
+                .find { it.title == d }
                 ?.categories
                 ?.find { it.name == c }
                 ?.courses
+                ?.map { it.name }
                 ?: emptyList()
         }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            emptyList()
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
         )
 
     // ---------- VALIDATION ----------

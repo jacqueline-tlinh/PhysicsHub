@@ -297,37 +297,6 @@ fun ExamUploadScreen(
                     }
                 }
 
-                // Semester Dropdown
-                ExposedDropdownMenuBox(
-                    expanded = semesterExpanded,
-                    onExpandedChange = { semesterExpanded = !semesterExpanded }
-                ) {
-                    OutlinedTextField(
-                        value = selectedSemester?.name ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Semester") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = semesterExpanded) },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = semesterExpanded,
-                        onDismissRequest = { semesterExpanded = false }
-                    ) {
-                        Semester.values().forEach { semester ->
-                            DropdownMenuItem(
-                                text = { Text(semester.name) },
-                                onClick = {
-                                    viewModel.selectSemester(semester)
-                                    semesterExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
                 // Year Dropdown
                 ExposedDropdownMenuBox(
                     expanded = yearExpanded,

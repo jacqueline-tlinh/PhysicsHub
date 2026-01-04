@@ -14,6 +14,7 @@ import com.example.physicshub.ui.screens.exams.archive.ExamArchiveRootScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamCourseScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamPreviewScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamSubjectScreen
+import com.example.physicshub.ui.screens.exams.upload.ExamUploadScreen
 import com.example.physicshub.ui.screens.home.HomeScreen
 import com.example.physicshub.ui.screens.login.LoginScreen
 import com.example.physicshub.ui.screens.notices.NoticeScreen
@@ -112,6 +113,9 @@ fun PhysicsHubNavGraph() {
                 )
             }
 
+            composable(Destinations.ExamUpload.route) {
+                ExamUploadScreen(navController)
+            }
         }
     }
 }

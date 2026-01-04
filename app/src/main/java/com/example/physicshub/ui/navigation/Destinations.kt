@@ -36,4 +36,5 @@ sealed class Destinations(val route: String) {
         ) = "exam_preview/$course/$type/$semester/$classId"
     }
 
+    object ExamUpload : Destinations("exam_upload")
 }

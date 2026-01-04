@@ -1,6 +1,7 @@
 package com.example.physicshub
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,6 +23,7 @@ import com.example.physicshub.ui.language.defaultEnglishStrings
 import com.example.physicshub.ui.language.defaultVietnameseStrings
 import com.example.physicshub.ui.navigation.PhysicsHubNavGraph
 import com.example.physicshub.ui.theme.PhysicsHubTheme
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +36,9 @@ class MainActivity : ComponentActivity() {
             val currentLanguage by languageManager.currentLanguage.collectAsState(initial = Language.ENGLISH)
             val englishStrings by translationRepository.englishStrings.collectAsState(initial = defaultEnglishStrings)
             val vietnameseStrings by translationRepository.vietnameseStrings.collectAsState(initial = defaultVietnameseStrings)
+
+            Log.d("FirebaseTest", FirebaseApp.getApps(this).toString())
+
 
             LaunchedEffect(Unit) {
                 translationRepository.fetchAndCacheTranslations()

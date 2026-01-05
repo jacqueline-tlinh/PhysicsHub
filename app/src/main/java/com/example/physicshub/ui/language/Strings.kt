@@ -47,11 +47,11 @@ object Strings {
             else defaultVietnameseStrings.upcomingEvent
         }
 
-    val equipmentBooking: String
+    val examArchive: String
         @Composable @ReadOnlyComposable
-        get() = currentStrings.equipmentBooking.ifEmpty {
-            if (LocalLanguage.current == Language.ENGLISH) defaultEnglishStrings.equipmentBooking
-            else defaultVietnameseStrings.equipmentBooking
+        get() = currentStrings.examArchive.ifEmpty {
+            if (LocalLanguage.current == Language.ENGLISH) defaultEnglishStrings.upcomingEvent
+            else defaultVietnameseStrings.examArchive
         }
 
     val notifications: String
@@ -150,13 +150,6 @@ object Strings {
         get() = currentStrings.navNotices.ifEmpty {
             if (LocalLanguage.current == Language.ENGLISH) defaultEnglishStrings.navNotices
             else defaultVietnameseStrings.navNotices
-        }
-
-    val navBooking: String
-        @Composable @ReadOnlyComposable
-        get() = currentStrings.navBooking.ifEmpty {
-            if (LocalLanguage.current == Language.ENGLISH) defaultEnglishStrings.navBooking
-            else defaultVietnameseStrings.navBooking
         }
 
     val navExams: String

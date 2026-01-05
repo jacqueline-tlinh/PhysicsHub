@@ -28,7 +28,6 @@ fun PhysicsHubScaffold(
         Destinations.Home.route,
         Destinations.Events.route,
         Destinations.Notices.route,
-        Destinations.Booking.route,
         Destinations.Exams.route
     )
 
@@ -40,7 +39,6 @@ fun PhysicsHubScaffold(
                         BottomNavItem("home", Strings.navHome, Icons.Default.Home),
                         BottomNavItem("events", Strings.navEvents, Icons.Default.Event),
                         BottomNavItem("notices", Strings.navNotices, Icons.Default.Notifications),
-                        BottomNavItem("booking", Strings.navBooking, Icons.Default.BookOnline),
                         BottomNavItem("exams", Strings.navExams, Icons.Default.Description)
                     )
 

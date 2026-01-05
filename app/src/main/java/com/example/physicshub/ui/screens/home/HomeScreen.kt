@@ -96,8 +96,8 @@ fun HomeScreen(
             )
 
             SectionPlaceholder(
-                title = Strings.equipmentBooking,
-                onClick = { navController.navigate("booking") }
+                title = Strings.examArchive,
+                onClick = { navController.navigate("exams") }
             )
         }
     }

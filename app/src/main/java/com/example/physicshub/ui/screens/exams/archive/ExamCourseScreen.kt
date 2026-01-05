@@ -155,10 +155,7 @@ fun ExamCourseScreen(
                             } else {
                                 navController.navigate(
                                     Destinations.ExamPreview.route(
-                                        courseName,
-                                        exam.type,
-                                        exam.semester,
-                                        exam.classId
+                                        courseName
                                     )
                                 )
                             }

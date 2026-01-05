@@ -1,7 +1,6 @@
 package com.example.physicshub.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Event
@@ -31,12 +30,6 @@ sealed class BottomNavDestination(
         icon = Icons.Default.Campaign
     )
 
-    object Booking : BottomNavDestination(
-        route = "booking",
-        label = "Booking",
-        icon = Icons.Default.Build
-    )
-
     object Exam : BottomNavDestination(
         route = "exam",
         label = "Exam",
@@ -48,6 +41,5 @@ val bottomNavItems = listOf(
     BottomNavDestination.Home,
     BottomNavDestination.Events,
     BottomNavDestination.Notices,
-    BottomNavDestination.Booking,
     BottomNavDestination.Exam
 )

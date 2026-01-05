@@ -8,16 +8,16 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.physicshub.ui.components.PhysicsHubScaffold
-import com.example.physicshub.ui.screens.bookiing.BookingScreen
 import com.example.physicshub.ui.screens.events.EventTrackerScreen
 import com.example.physicshub.ui.screens.events.EventCreateScreen
 import com.example.physicshub.ui.screens.events.EventRegistrationScreen
 import com.example.physicshub.ui.screens.events.viewmodel.EventViewModel
 import com.example.physicshub.ui.screens.exams.ExamHomeScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamArchiveRootScreen
+import com.example.physicshub.ui.screens.exams.archive.ExamCategoryScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamCourseScreen
+import com.example.physicshub.ui.screens.exams.archive.ExamFilesScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamPreviewScreen
-import com.example.physicshub.ui.screens.exams.archive.ExamSubjectScreen
 import com.example.physicshub.ui.screens.exams.upload.ExamUploadScreen
 import com.example.physicshub.ui.screens.home.HomeScreen
 import com.example.physicshub.ui.screens.login.LoginScreen
@@ -85,60 +85,67 @@ fun PhysicsHubNavGraph() {
                 ExamHomeScreen(navController)
             }
 
-            composable(Destinations.Booking.route) {
-                BookingScreen(navController)
-            }
-
             composable(Destinations.ExamArchive.route) {
                 ExamArchiveRootScreen(navController)
             }
 
             composable(
-                Destinations.ExamDivision.route,
+                route = Destinations.ExamCategory.route,
                 arguments = listOf(
-                    navArgument("division") {
-                        type = NavType.StringType
-                    }
+                    navArgument("division") { type = NavType.StringType }
                 )
             ) { entry ->
-                ExamSubjectScreen(
+                ExamCategoryScreen(
                     navController = navController,
-                    title = entry.arguments!!
-                        .getString("division")!!
+                    division = entry.arguments?.getString("division").orEmpty()
                 )
             }
 
             composable(
-                Destinations.ExamCourse.route,
+                route = Destinations.ExamCourse.route,
                 arguments = listOf(
                     navArgument("division") { type = NavType.StringType },
-                    navArgument("subject") { type = NavType.StringType },
-                    navArgument("course") { type = NavType.StringType }
+                    navArgument("category") { type = NavType.StringType }
                 )
             ) { entry ->
                 ExamCourseScreen(
                     navController = navController,
-                    courseName = entry.arguments!!
-                        .getString("course")!!
+                    courseName = entry.arguments
+                        ?.getString("category")
+                        .orEmpty()
+                )
+            }
+
+            composable(
+                route = Destinations.ExamFiles.route,
+                arguments = listOf(
+                    navArgument("division") { type = NavType.StringType },
+                    navArgument("category") { type = NavType.StringType },
+                    navArgument("course") { type = NavType.StringType }
+                )
+            ) { entry ->
+                ExamFilesScreen(
+                    navController = navController,
+                    division = entry.arguments?.getString("division").orEmpty(),
+                    category = entry.arguments?.getString("category").orEmpty(),
+                    course = entry.arguments?.getString("course").orEmpty()
                 )
             }
 
             composable(
                 route = Destinations.ExamPreview.route,
                 arguments = listOf(
-                    navArgument("course") { type = NavType.StringType },
-                    navArgument("type") { type = NavType.StringType },
-                    navArgument("semester") { type = NavType.IntType },
-                    navArgument("classId") { type = NavType.StringType }
+                    navArgument("examId") { type = NavType.StringType }
                 )
-            ) { backStackEntry ->
+            ) { entry ->
                 ExamPreviewScreen(
                     navController = navController,
-                    courseName = backStackEntry.arguments?.getString("course") ?: "",
-                    examType = backStackEntry.arguments?.getString("type") ?: "",
-                    semester = backStackEntry.arguments?.getInt("semester") ?: 0,
-                    classId = backStackEntry.arguments?.getString("classId") ?: ""
+                    examId = entry.arguments?.getString("examId").orEmpty()
                 )
+            }
+
+            composable(Destinations.ExamUpload.route) {
+                ExamUploadScreen(navController)
             }
 
             composable(Destinations.ExamUpload.route) {

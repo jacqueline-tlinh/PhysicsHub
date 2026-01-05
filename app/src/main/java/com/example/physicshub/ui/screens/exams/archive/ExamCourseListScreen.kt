@@ -161,7 +161,6 @@ private fun CourseCard(
         colors = CardDefaults.cardColors(
             containerColor = pastelBlue.copy(alpha = 0.10f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier

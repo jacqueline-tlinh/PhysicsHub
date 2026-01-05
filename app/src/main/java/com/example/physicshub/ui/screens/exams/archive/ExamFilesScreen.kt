@@ -28,7 +28,7 @@ fun ExamFilesScreen(
     navController: NavController,
     division: String,
     category: String,
-    course: String,
+    courseID: String,  // Changed from course to courseID
     viewModel: ExamArchiveViewModel = viewModel()
 ) {
     val examPapers by viewModel.examPapers.collectAsState()
@@ -36,14 +36,20 @@ fun ExamFilesScreen(
     val selectedIds = remember { mutableStateListOf<String>() }
     val isSelectionMode = selectedIds.isNotEmpty()
 
+    // Get course name for display from exam papers (if available)
+    val courseName = remember(examPapers) {
+        examPapers.firstOrNull()?.course ?: courseID
+    }
+
     // Grouped by year, then by exam type
     val groupedExams = remember(examPapers) {
         examPapers.groupBy { it.year }
             .toSortedMap(reverseOrder()) // Newest year first
     }
 
-    LaunchedEffect(division, category, course) {
-        viewModel.loadExamsByCourse(division, category, course)
+    LaunchedEffect(division, category, courseID) {
+        println("🔄 Loading exams for: division=$division, category=$category, courseID=$courseID")
+        viewModel.loadExamsByCourse(division, category, courseID)
     }
 
     Scaffold(
@@ -51,7 +57,7 @@ fun ExamFilesScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = course,
+                        text = courseName,  // Display course name instead of ID
                         style = MaterialTheme.typography.headlineMedium
                     )
                 },

@@ -43,10 +43,12 @@ class ExamArchiveViewModel(
         }
     }
 
-    fun loadExamsByCourse(division: String, category: String, course: String) {
+    fun loadExamsByCourse(division: String, category: String, courseID: String) {
         viewModelScope.launch {
             _loadingPapers.value = true
-            _examPapers.value = archiveRepository.getExamsByCourse(division, category, course)
+            println("📚 ViewModel: Loading exams for courseID=$courseID")
+            _examPapers.value = archiveRepository.getExamsByCourse(division, category, courseID)
+            println("📚 ViewModel: Loaded ${_examPapers.value.size} exams")
             _loadingPapers.value = false
         }
     }

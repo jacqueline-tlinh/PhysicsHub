@@ -42,14 +42,19 @@ class ExamUploadViewModel(
     private val _category = MutableStateFlow<String?>(null)
     val category: StateFlow<String?> = _category.asStateFlow()
 
-    private val _course = MutableStateFlow<String?>(null)
-    val course: StateFlow<String?> = _course.asStateFlow()
+    // Store both course name and ID
+    private val _courseName = MutableStateFlow<String?>(null)
+    val courseName: StateFlow<String?> = _courseName.asStateFlow()
+
+    private val _courseID = MutableStateFlow<String?>(null)
+    val courseID: StateFlow<String?> = _courseID.asStateFlow()
 
     private val _examType = MutableStateFlow<ExamType?>(null)
     val examType: StateFlow<ExamType?> = _examType.asStateFlow()
 
     private val _year = MutableStateFlow<Int?>(null)
     val year: StateFlow<Int?> = _year.asStateFlow()
+
     // Get all unique division titles from metadata
     val divisions: StateFlow<List<String>> =
         metadata
@@ -78,7 +83,7 @@ class ExamUploadViewModel(
             initialValue = emptyList()
         )
 
-    // Get courses for selected division and category
+    // Get courses for selected division and category (returns course names for display)
     val courses: StateFlow<List<String>> =
         combine(metadata, division, category) { exams, d, c ->
             if (d == null || c == null) return@combine emptyList()
@@ -101,7 +106,8 @@ class ExamUploadViewModel(
         combine(
             division,
             category,
-            course,
+            courseName,
+            courseID,
             examType,
             year
         ) { values: Array<out Any?> ->
@@ -116,16 +122,36 @@ class ExamUploadViewModel(
     fun selectDivision(value: String) {
         _division.value = value
         _category.value = null
-        _course.value = null
+        _courseName.value = null
+        _courseID.value = null
     }
 
     fun selectCategory(value: String) {
         _category.value = value
-        _course.value = null
+        _courseName.value = null
+        _courseID.value = null
     }
 
-    fun selectCourse(value: String) {
-        _course.value = value
+    // Updated to find and store both name and ID
+    fun selectCourse(courseName: String) {
+        _courseName.value = courseName
+
+        // Find the corresponding courseID from metadata
+        val d = division.value
+        val c = category.value
+
+        if (d != null && c != null) {
+            val courseMetadata = metadata.value
+                .find { it.title == d }
+                ?.categories
+                ?.find { it.name == c }
+                ?.courses
+                ?.find { it.name == courseName }
+
+            _courseID.value = courseMetadata?.courseID
+
+            println("📝 Selected course: $courseName (ID: ${courseMetadata?.courseID})")
+        }
     }
 
     fun selectExamType(value: ExamType) {
@@ -157,12 +183,15 @@ class ExamUploadViewModel(
     ) {
         val divisionVal = division.value ?: return
         val categoryVal = category.value ?: return
-        val courseVal = course.value ?: return
+        val courseNameVal = courseName.value ?: return
+        val courseIDVal = courseID.value ?: return
         val examTypeVal = examType.value ?: return
         val yearVal = year.value ?: return
 
         viewModelScope.launch {
             _uploadState.value = UploadState.Uploading
+
+            println("📤 Uploading with: division=$divisionVal, category=$categoryVal, courseName=$courseNameVal, courseID=$courseIDVal")
 
             val result = uploadRepository.uploadExamPaper(
                 fileUri = fileUri,
@@ -171,7 +200,8 @@ class ExamUploadViewModel(
 
                 division = divisionVal,
                 category = categoryVal,
-                course = courseVal,
+                courseName = courseNameVal,
+                courseID = courseIDVal,
                 examType = examTypeVal.name,
                 year = yearVal,
 
@@ -198,12 +228,15 @@ class ExamUploadViewModel(
     ) {
         val divisionVal = division.value ?: return
         val categoryVal = category.value ?: return
-        val courseVal = course.value ?: return
+        val courseNameVal = courseName.value ?: return
+        val courseIDVal = courseID.value ?: return
         val examTypeVal = examType.value ?: return
         val yearVal = year.value ?: return
 
         viewModelScope.launch {
             _uploadState.value = UploadState.Uploading
+
+            println("📤 Uploading multiple with: division=$divisionVal, category=$categoryVal, courseName=$courseNameVal, courseID=$courseIDVal")
 
             val result = uploadRepository.uploadMultipleExamPapers(
                 fileUris = fileUris,
@@ -212,7 +245,8 @@ class ExamUploadViewModel(
 
                 division = divisionVal,
                 category = categoryVal,
-                course = courseVal,
+                courseName = courseNameVal,
+                courseID = courseIDVal,
                 examType = examTypeVal.name,
                 year = yearVal,
 

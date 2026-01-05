@@ -6,7 +6,8 @@ data class ExamPaper(
     val id: String = "",
     val division: String = "",
     val category: String = "",
-    val course: String = "",
+    val course: String = "",           // Course name
+    val courseID: String = "",         // Course ID
     val examType: String = "",
     val year: Int = 0,
     val fileUrl: String = "",

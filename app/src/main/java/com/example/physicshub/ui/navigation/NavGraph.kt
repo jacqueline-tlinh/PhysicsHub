@@ -120,14 +120,14 @@ fun PhysicsHubNavGraph() {
                 arguments = listOf(
                     navArgument("division") { type = NavType.StringType },
                     navArgument("category") { type = NavType.StringType },
-                    navArgument("course") { type = NavType.StringType }
+                    navArgument("courseID") { type = NavType.StringType }  // Changed from "course" to "courseID"
                 )
             ) { entry ->
                 ExamFilesScreen(
                     navController = navController,
                     division = entry.arguments?.getString("division").orEmpty(),
                     category = entry.arguments?.getString("category").orEmpty(),
-                    course = entry.arguments?.getString("course").orEmpty()
+                    courseID = entry.arguments?.getString("courseID").orEmpty()  // Changed parameter name
                 )
             }
 
@@ -141,10 +141,6 @@ fun PhysicsHubNavGraph() {
                     navController = navController,
                     examId = entry.arguments?.getString("examId").orEmpty()
                 )
-            }
-
-            composable(Destinations.ExamUpload.route) {
-                ExamUploadScreen(navController)
             }
 
             composable(Destinations.ExamUpload.route) {

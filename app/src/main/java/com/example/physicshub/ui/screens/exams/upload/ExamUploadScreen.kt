@@ -42,7 +42,8 @@ fun ExamUploadScreen(
 
     val selectedDivision by viewModel.division.collectAsState()
     val selectedCategory by viewModel.category.collectAsState()
-    val selectedCourse by viewModel.course.collectAsState()
+    val selectedCourseName by viewModel.courseName.collectAsState()  // Changed from course to courseName
+    val selectedCourseID by viewModel.courseID.collectAsState()      // Added courseID
     val selectedExamType by viewModel.examType.collectAsState()
     val selectedYear by viewModel.year.collectAsState()
 
@@ -246,7 +247,7 @@ fun ExamUploadScreen(
                     }
                 ) {
                     OutlinedTextField(
-                        value = selectedCourse ?: "",
+                        value = selectedCourseName ?: "",  // Changed from selectedCourse
                         onValueChange = {},
                         readOnly = true,
                         enabled = selectedCategory != null,
@@ -394,7 +395,8 @@ fun ExamUploadScreen(
                         println("📊 Can upload: $canUpload")
                         println("🏷️ Division: $selectedDivision")
                         println("🏷️ Category: $selectedCategory")
-                        println("🏷️ Course: $selectedCourse")
+                        println("🏷️ Course Name: $selectedCourseName")
+                        println("🏷️ Course ID: $selectedCourseID")
                         println("🏷️ Exam Type: $selectedExamType")
                         println("🏷️ Year: $selectedYear")
 
@@ -402,7 +404,7 @@ fun ExamUploadScreen(
 
                         // Get file type from first file
                         val firstMimeType = resolver.getType(selectedFiles.first())
-                        println("📎 MIME type: $firstMimeType")
+                        println("🔎 MIME type: $firstMimeType")
                         val fileType = firstMimeType?.let { FileValidation.getFileType(it) } ?: FileType.PDF
                         println("📄 File type: $fileType")
 

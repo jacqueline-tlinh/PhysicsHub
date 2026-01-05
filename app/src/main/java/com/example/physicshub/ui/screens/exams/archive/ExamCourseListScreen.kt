@@ -133,6 +133,7 @@ fun ExamCourseListScreen(
                     CourseCard(
                         course = course,
                         onClick = {
+                            // IMPORTANT: Pass courseID instead of course name
                             navController.navigate(
                                 Destinations.ExamFiles.route(division, category, course.courseID)
                             )

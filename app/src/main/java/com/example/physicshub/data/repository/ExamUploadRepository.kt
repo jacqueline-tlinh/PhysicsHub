@@ -27,7 +27,8 @@ class ExamUploadRepository {
 
         division: String,
         category: String,
-        course: String,
+        courseName: String,
+        courseID: String,
         examType: String,
         year: Int,
 
@@ -41,9 +42,12 @@ class ExamUploadRepository {
                 FileType.IMAGE -> "jpg"
             }
 
-            // Storage path: exams/{division}/{category}/{course}/{year}/{examType}/{paperId}.{ext}
+            // Storage path: exams/{division}/{category}/{courseID}/{year}/{examType}/{paperId}.{ext}
+            // Using courseID for storage path for consistency
             val storagePath =
-                "exams/$division/$category/$course/$year/$examType/$paperId.$extension"
+                "exams/$division/$category/$courseID/$year/$examType/$paperId.$extension"
+
+            println("📤 Uploading to: $storagePath")
 
             val storageRef = storage.reference.child(storagePath)
             storageRef.putFile(fileUri).await()
@@ -54,7 +58,8 @@ class ExamUploadRepository {
                 id = paperId,
                 division = division,
                 category = category,
-                course = course,
+                course = courseName,      // Store the full name
+                courseID = courseID,      // Store the ID for querying
                 examType = examType,
                 year = year,
                 fileUrl = downloadUrl,
@@ -71,7 +76,7 @@ class ExamUploadRepository {
                 .set(paper)
                 .await()
 
-            println("💾 Firestore document saved")
+            println("💾 Firestore document saved: $paperId")
 
             Result.success(paperId)
         } catch (e: Exception) {
@@ -92,7 +97,8 @@ class ExamUploadRepository {
 
         division: String,
         category: String,
-        course: String,
+        courseName: String,
+        courseID: String,
         examType: String,
         year: Int,
 
@@ -108,7 +114,8 @@ class ExamUploadRepository {
                         fileSize = fileSizes.getOrElse(index) { 0L },
                         division = division,
                         category = category,
-                        course = course,
+                        courseName = courseName,
+                        courseID = courseID,
                         examType = examType,
                         year = year,
                         uploadedBy = uploadedBy,

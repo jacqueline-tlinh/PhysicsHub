@@ -11,27 +11,69 @@ class ExamArchiveRepository(
 
     /**
      * Get all exam papers for a specific course
+     * Now uses courseID for more reliable querying
      */
     suspend fun getExamsByCourse(
         division: String,
         category: String,
-        course: String
+        courseID: String  // Changed from course to courseID
     ): List<ExamPaper> {
         return try {
+            println("🔍 Querying exams: division=$division, category=$category, courseID=$courseID")
+
             val snapshot = firestore
                 .collection("exam_papers")
                 .whereEqualTo("division", division)
                 .whereEqualTo("category", category)
-                .whereEqualTo("course", course)
+                .whereEqualTo("courseID", courseID)  // Query by courseID instead
                 .orderBy("year", Query.Direction.DESCENDING)
                 .orderBy("examType", Query.Direction.ASCENDING)
                 .get()
                 .await()
 
-            snapshot.documents.mapNotNull { doc ->
+            val papers = snapshot.documents.mapNotNull { doc ->
                 doc.toObject(ExamPaper::class.java)
             }
+
+            println("📄 Found ${papers.size} exam papers")
+            papers
         } catch (e: Exception) {
+            println("❌ Error fetching exams: ${e.message}")
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    /**
+     * Alternative: Get exams by course name (if you prefer this approach)
+     */
+    suspend fun getExamsByCourseName(
+        division: String,
+        category: String,
+        courseName: String
+    ): List<ExamPaper> {
+        return try {
+            println("🔍 Querying exams by name: division=$division, category=$category, course=$courseName")
+
+            val snapshot = firestore
+                .collection("exam_papers")
+                .whereEqualTo("division", division)
+                .whereEqualTo("category", category)
+                .whereEqualTo("course", courseName)
+                .orderBy("year", Query.Direction.DESCENDING)
+                .orderBy("examType", Query.Direction.ASCENDING)
+                .get()
+                .await()
+
+            val papers = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(ExamPaper::class.java)
+            }
+
+            println("📄 Found ${papers.size} exam papers")
+            papers
+        } catch (e: Exception) {
+            println("❌ Error fetching exams: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
     }

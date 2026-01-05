@@ -18,9 +18,9 @@ sealed class Destinations(val route: String) {
         fun route(division: String, category: String) = "exam_course/$division/$category"
     }
 
-    object ExamFiles : Destinations("exam_files/{division}/{category}/{course}") {
-        fun route(division: String, category: String, course: String) =
-            "exam_files/$division/$category/$course"
+    object ExamFiles : Destinations("exam_files/{division}/{category}/{courseID}") {
+        fun route(division: String, category: String, courseID: String) =
+            "exam_files/$division/$category/$courseID"
     }
 
     object ExamPreview : Destinations("exam_preview/{examId}") {

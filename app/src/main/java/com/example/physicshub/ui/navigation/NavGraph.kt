@@ -15,7 +15,7 @@ import com.example.physicshub.ui.screens.events.viewmodel.EventViewModel
 import com.example.physicshub.ui.screens.exams.ExamHomeScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamArchiveRootScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamCategoryScreen
-import com.example.physicshub.ui.screens.exams.archive.ExamCourseScreen
+import com.example.physicshub.ui.screens.exams.archive.ExamCourseListScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamFilesScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamPreviewScreen
 import com.example.physicshub.ui.screens.exams.upload.ExamUploadScreen
@@ -108,11 +108,10 @@ fun PhysicsHubNavGraph() {
                     navArgument("category") { type = NavType.StringType }
                 )
             ) { entry ->
-                ExamCourseScreen(
+                ExamCourseListScreen(
                     navController = navController,
-                    courseName = entry.arguments
-                        ?.getString("category")
-                        .orEmpty()
+                    division = entry.arguments?.getString("division").orEmpty(),
+                    category = entry.arguments?.getString("category").orEmpty()
                 )
             }
 

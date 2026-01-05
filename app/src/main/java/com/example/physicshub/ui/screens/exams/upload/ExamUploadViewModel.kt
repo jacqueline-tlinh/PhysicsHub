@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.physicshub.data.model.ExamMetadata
 import com.example.physicshub.data.model.ExamType
 import com.example.physicshub.data.model.FileType
-import com.example.physicshub.data.model.Semester
 import com.example.physicshub.data.repository.ExamUploadRepository
 import com.example.physicshub.data.repository.MetadataRepository
 import kotlinx.coroutines.flow.*

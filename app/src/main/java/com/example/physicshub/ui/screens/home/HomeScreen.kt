@@ -1,6 +1,7 @@
 package com.example.physicshub.ui.screens.home
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,13 +19,16 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,6 +38,7 @@ import androidx.navigation.NavController
 import com.example.physicshub.R
 import com.example.physicshub.data.model.Event
 import com.example.physicshub.data.model.ExamPaper
+import com.example.physicshub.data.repository.AuthRepository
 import com.example.physicshub.ui.components.ThemeToggle
 import com.example.physicshub.ui.language.Language
 import com.example.physicshub.ui.language.LanguageManager
@@ -61,12 +66,16 @@ fun HomeScreen(
     val context = LocalContext.current
     val repository = remember { NoticeRepository.getInstance(context) }
     val languageManager = remember { LanguageManager.getInstance(context) }
+    val authRepository = remember { AuthRepository.getInstance(context) }
     val scope = rememberCoroutineScope()
 
     val cachedNotices by repository.cachedNotices.collectAsState(initial = mockNotices)
     val readIds by repository.readNoticeIds.collectAsState(initial = emptySet())
     val currentLanguage by languageManager.currentLanguage.collectAsState(initial = Language.ENGLISH)
     val isDarkMode by themeViewModel.isDarkMode.collectAsState()
+
+    // Get current user from AuthRepository
+    val currentUser by authRepository.getCurrentUser().collectAsState(initial = null)
 
     val notices = cachedNotices.map { notice ->
         notice.copy(isRead = readIds.contains(notice.id))
@@ -84,14 +93,12 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             HomeTopBar(
+                userName = currentUser?.fullName ?: "User",
                 currentLanguage = currentLanguage,
                 onLanguageToggle = {
                     scope.launch {
                         languageManager.toggleLanguage()
                     }
-                },
-                onNotificationClick = {
-                    navController.navigate("notifications")
                 },
                 isDarkMode = isDarkMode,
                 onThemeToggle = {
@@ -312,9 +319,9 @@ fun UpcomingEventCard(
 
 @Composable
 fun HomeTopBar(
+    userName: String,
     currentLanguage: Language,
     onLanguageToggle: () -> Unit,
-    onNotificationClick: () -> Unit,
     isDarkMode: Boolean,
     onThemeToggle: () -> Unit
 ) {
@@ -328,11 +335,14 @@ fun HomeTopBar(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
+            // Profile Picture from drawable
+            Image(
+                painter = painterResource(id = R.drawable.profile),
+                contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -343,7 +353,7 @@ fun HomeTopBar(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = "User",
+                    text = userName,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -360,13 +370,6 @@ fun HomeTopBar(
                 currentLanguage = currentLanguage,
                 onToggle = onLanguageToggle
             )
-
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = Strings.notifications
-                )
-            }
         }
     }
 }

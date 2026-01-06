@@ -143,11 +143,11 @@ fun LoginScreen(
                 )
             }
 
-            TextButton(
-                onClick = viewModel::devLogin
-            ) {
-                Text("DEV: Skip login")
-            }
+//            TextButton(
+//                onClick = viewModel::devLogin
+//            ) {
+//                Text("DEV: Skip login")
+//            }
         }
     }
 }

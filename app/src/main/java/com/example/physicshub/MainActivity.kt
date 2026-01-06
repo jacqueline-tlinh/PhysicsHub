@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.physicshub.ui.language.Language
 import com.example.physicshub.ui.language.LanguageManager
 import com.example.physicshub.ui.language.LocalLanguage
@@ -23,6 +24,7 @@ import com.example.physicshub.ui.language.defaultEnglishStrings
 import com.example.physicshub.ui.language.defaultVietnameseStrings
 import com.example.physicshub.ui.navigation.PhysicsHubNavGraph
 import com.example.physicshub.ui.theme.PhysicsHubTheme
+import com.example.physicshub.ui.theme.ThemeViewModel
 import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
@@ -33,12 +35,15 @@ class MainActivity : ComponentActivity() {
             val languageManager = remember { LanguageManager.getInstance(this) }
             val translationRepository = remember { TranslationRepository.getInstance(this) }
 
+            // ThemeViewModel để quản lý Dark Mode
+            val themeViewModel: ThemeViewModel = viewModel()
+            val isDarkMode by themeViewModel.isDarkMode.collectAsState()
+
             val currentLanguage by languageManager.currentLanguage.collectAsState(initial = Language.ENGLISH)
             val englishStrings by translationRepository.englishStrings.collectAsState(initial = defaultEnglishStrings)
             val vietnameseStrings by translationRepository.vietnameseStrings.collectAsState(initial = defaultVietnameseStrings)
 
             Log.d("FirebaseTest", FirebaseApp.getApps(this).toString())
-
 
             LaunchedEffect(Unit) {
                 translationRepository.fetchAndCacheTranslations()
@@ -48,8 +53,9 @@ class MainActivity : ComponentActivity() {
                 LocalLanguage provides currentLanguage,
                 LocalTranslations provides Pair(englishStrings, vietnameseStrings)
             ) {
-                PhysicsHubTheme {
-                    PhysicsHubNavGraph()
+                // Áp dụng theme với trạng thái Dark Mode
+                PhysicsHubTheme(darkTheme = isDarkMode) {
+                    PhysicsHubNavGraph(themeViewModel = themeViewModel)
                 }
             }
         }

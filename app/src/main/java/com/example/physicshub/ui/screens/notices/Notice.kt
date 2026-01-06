@@ -1,32 +1,36 @@
 package com.example.physicshub.ui.screens.notices
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.example.physicshub.ui.theme.extendedColors
 
 enum class NoticeCategory(
-    val displayName: String,
-    val backgroundColor: Color,
-    val iconTint: Color
+    val displayName: String
 ) {
-    ACADEMIC_AFFAIRS(
-        displayName = "Academic Affairs",
-        backgroundColor = Color(0xFFE8F5E9),
-        iconTint = Color(0xFF27BA80)
-    ),
-    RESEARCH(
-        displayName = "Research",
-        backgroundColor = Color(0xFFFFFDE7),
-        iconTint = Color(0xFF27BA80)
-    ),
-    EVENTS(
-        displayName = "Events",
-        backgroundColor = Color(0xFFE3F2FD),
-        iconTint = Color(0xFF27BA80)
-    ),
-    GENERAL(
-        displayName = "General",
-        backgroundColor = Color(0xFFF3E5F5),
-        iconTint = Color(0xFF27BA80)
-    )
+    ACADEMIC_AFFAIRS("Academic Affairs"),
+    RESEARCH("Research"),
+    EVENTS("Events"),
+    GENERAL("General");
+
+    /**
+     * Lấy màu background theo theme hiện tại
+     */
+    val backgroundColor: Color
+        @Composable
+        get() = when (this) {
+            ACADEMIC_AFFAIRS -> MaterialTheme.extendedColors.noticeCategoryAcademic
+            RESEARCH -> MaterialTheme.extendedColors.noticeCategoryResearch
+            EVENTS -> MaterialTheme.extendedColors.noticeCategoryEvents
+            GENERAL -> MaterialTheme.extendedColors.noticeCategoryGeneral
+        }
+
+    /**
+     * Lấy màu icon theo theme hiện tại
+     */
+    val iconTint: Color
+        @Composable
+        get() = MaterialTheme.extendedColors.noticeIconTint
 }
 
 data class Notice(

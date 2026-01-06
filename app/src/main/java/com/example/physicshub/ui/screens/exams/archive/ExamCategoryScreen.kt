@@ -12,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -20,6 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.physicshub.data.model.CategoryMetadata
 import com.example.physicshub.ui.navigation.Destinations
+import com.example.physicshub.ui.theme.extendedColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,15 +145,13 @@ private fun CategoryCard(
     category: CategoryMetadata,
     onClick: () -> Unit
 ) {
-    val pastelGreen = Color(0xFF277795)
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = pastelGreen.copy(alpha = 0.10f)
+            containerColor = MaterialTheme.extendedColors.examCategoryBlue.copy(alpha = 0.10f)
         )
     ) {
         Row(

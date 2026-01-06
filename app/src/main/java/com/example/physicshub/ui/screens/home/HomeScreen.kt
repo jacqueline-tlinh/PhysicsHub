@@ -28,13 +28,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.physicshub.data.model.ExamPaper
 import com.example.physicshub.ui.components.PhysicsHubScaffold
 import com.example.physicshub.ui.language.Language
 import com.example.physicshub.ui.language.LanguageManager
 import com.example.physicshub.ui.language.Strings
 import com.example.physicshub.ui.navigation.Destinations
+import com.example.physicshub.ui.screens.exams.archive.ExamArchiveViewModel
 import com.example.physicshub.ui.screens.notices.Notice
 import com.example.physicshub.ui.screens.notices.NoticeCategory
 import com.example.physicshub.ui.screens.notices.NoticeRepository
@@ -45,7 +48,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    navController: NavController
+    navController: NavController,
+    examViewModel: ExamArchiveViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val repository = remember { NoticeRepository.getInstance(context) }
@@ -58,6 +62,14 @@ fun HomeScreen(
 
     val notices = cachedNotices.map { notice ->
         notice.copy(isRead = readIds.contains(notice.id))
+    }
+
+    var newestUploads by remember { mutableStateOf<List<ExamPaper>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        examViewModel.getNewestUploads(3) { uploads ->
+            newestUploads = uploads
+        }
     }
 
     Scaffold(
@@ -95,9 +107,12 @@ fun HomeScreen(
                 onNoticeClick = { navController.navigate("notices") }
             )
 
-            SectionPlaceholder(
-                title = Strings.examArchive,
-                onClick = { navController.navigate("exams") }
+            NewestExamUploadsSection(
+                uploads = newestUploads,
+                onViewMoreClick = { navController.navigate(Destinations.ExamArchive.route) },
+                onExamClick = { exam ->
+                    navController.navigate(Destinations.ExamPreview.route(exam.id))
+                }
             )
         }
     }
@@ -397,28 +412,124 @@ fun NoticeSliderCard(
         }
     }
 }
+@Composable
+fun NewestExamUploadsSection(
+    uploads: List<ExamPaper>,
+    onViewMoreClick: () -> Unit,
+    onExamClick: (ExamPaper) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = Strings.examArchive,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold
+            )
 
-//@Composable
-//fun HomeCard(
-//    title: String,
-//    subtitle: String,
-//    onClick: () -> Unit
-//) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 8.dp)
-//            .clickable(onClick = onClick),
-//        shape = RoundedCornerShape(12.dp)
-//    ) {
-//        Column(modifier = Modifier.padding(16.dp)) {
-//            Text(title, style = MaterialTheme.typography.titleMedium)
-//            Spacer(modifier = Modifier.height(4.dp))
-//            Text(subtitle, style = MaterialTheme.typography.bodyMedium)
-//        }
-//    }
-//}
+            OutlinedButton(
+                onClick = onViewMoreClick,
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = Strings.viewMore,
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+        }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (uploads.isEmpty()) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFFF2F2F2)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = "No uploads yet.\nBe the first to contribute!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                uploads.forEach { exam ->
+                    ExamUploadCard(
+                        exam = exam,
+                        onClick = { onExamClick(exam) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ExamUploadCard(
+    exam: ExamPaper,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFE8F5E9)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = exam.course,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${exam.examType.uppercase()} • Year ${exam.year}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Text(
+                    text = exam.fileType.name,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable

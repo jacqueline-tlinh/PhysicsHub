@@ -62,12 +62,11 @@ fun EventTrackerScreen(
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val successMessage = stringResource(R.string.registration_success)
 
     LaunchedEffect(showSuccess) {
         if (showSuccess) {
-            snackbarHostState.showSnackbar(
-                context.getString(R.string.registration_success)
-            )
+            snackbarHostState.showSnackbar(successMessage)
             viewModel.resetSuccessMessage()
         }
     }

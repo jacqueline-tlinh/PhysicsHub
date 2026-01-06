@@ -63,9 +63,9 @@ fun PhysicsHubNavGraph(
         Destinations.Login.route
     }
 
-    // ✅ SHARED VIEWMODELS
-    val eventViewModel: EventViewModel = viewModel()
-    val noticeViewModel: NoticeViewModel = viewModel()  // ✅ THÊM SHARED NOTICE VIEWMODEL
+    // ✅ SHARED VIEWMODELS - Tạo ở level NavGraph để share giữa các screens
+    val sharedEventViewModel: EventViewModel = viewModel()
+    val sharedNoticeViewModel: NoticeViewModel = viewModel()
 
     PhysicsHubScaffold(navController = navController) { padding ->
 
@@ -75,6 +75,9 @@ fun PhysicsHubNavGraph(
             modifier = Modifier.padding(padding)
         ) {
 
+            // ============================================
+            // AUTHENTICATION
+            // ============================================
             composable(Destinations.Login.route) {
                 LoginScreen(
                     onLoginSuccess = {
@@ -85,25 +88,40 @@ fun PhysicsHubNavGraph(
                 )
             }
 
+            // ============================================
+            // HOME SCREEN
+            // ============================================
             composable(Destinations.Home.route) {
                 HomeScreen(
                     navController = navController,
-                    eventViewModel = eventViewModel,
+                    sharedEventViewModel = sharedEventViewModel,  // ✅ Truyền shared ViewModel
                     themeViewModel = themeViewModel,
-                    noticeViewModel = noticeViewModel  // ✅ TRUYỀN SHARED VIEWMODEL
+                    noticeViewModel = sharedNoticeViewModel
                 )
             }
 
+            // ============================================
+            // EVENT SCREENS - Tất cả dùng chung sharedEventViewModel
+            // ============================================
             composable(Destinations.Events.route) {
-                EventTrackerScreen(navController, eventViewModel)
+                EventTrackerScreen(
+                    navController = navController,
+                    viewModel = sharedEventViewModel  // ✅ Shared ViewModel
+                )
             }
 
             composable(Destinations.EventTracker.route) {
-                EventTrackerScreen(navController, eventViewModel)
+                EventTrackerScreen(
+                    navController = navController,
+                    viewModel = sharedEventViewModel  // ✅ Shared ViewModel
+                )
             }
 
             composable(Destinations.EventCreate.route) {
-                EventCreateScreen(navController, eventViewModel)
+                EventCreateScreen(
+                    navController = navController,
+                    viewModel = sharedEventViewModel  // ✅ Shared ViewModel
+                )
             }
 
             composable(
@@ -116,24 +134,29 @@ fun PhysicsHubNavGraph(
                 EventRegistrationScreen(
                     navController = navController,
                     eventId = eventId,
-                    viewModel = eventViewModel
+                    viewModel = sharedEventViewModel  // ✅ Shared ViewModel
                 )
             }
 
+            // ============================================
+            // NOTICE SCREEN
+            // ============================================
             composable(Destinations.Notices.route) {
-                // ✅ TRUYỀN SHARED VIEWMODEL
                 NoticeScreen(
                     navController = navController,
-                    viewModel = noticeViewModel
+                    viewModel = sharedNoticeViewModel  // ✅ Shared ViewModel
                 )
             }
 
+            // ============================================
+            // EXAM SCREENS
+            // ============================================
             composable(Destinations.Exams.route) {
-                ExamHomeScreen(navController)
+                ExamHomeScreen(navController = navController)
             }
 
             composable(Destinations.ExamArchive.route) {
-                ExamArchiveRootScreen(navController)
+                ExamArchiveRootScreen(navController = navController)
             }
 
             composable(
@@ -141,10 +164,11 @@ fun PhysicsHubNavGraph(
                 arguments = listOf(
                     navArgument("division") { type = NavType.StringType }
                 )
-            ) { entry ->
+            ) { backStackEntry ->
+                val division = backStackEntry.arguments?.getString("division") ?: ""
                 ExamCategoryScreen(
                     navController = navController,
-                    division = entry.arguments?.getString("division").orEmpty()
+                    division = division
                 )
             }
 
@@ -154,11 +178,13 @@ fun PhysicsHubNavGraph(
                     navArgument("division") { type = NavType.StringType },
                     navArgument("category") { type = NavType.StringType }
                 )
-            ) { entry ->
+            ) { backStackEntry ->
+                val division = backStackEntry.arguments?.getString("division") ?: ""
+                val category = backStackEntry.arguments?.getString("category") ?: ""
                 ExamCourseListScreen(
                     navController = navController,
-                    division = entry.arguments?.getString("division").orEmpty(),
-                    category = entry.arguments?.getString("category").orEmpty()
+                    division = division,
+                    category = category
                 )
             }
 
@@ -169,12 +195,15 @@ fun PhysicsHubNavGraph(
                     navArgument("category") { type = NavType.StringType },
                     navArgument("courseID") { type = NavType.StringType }
                 )
-            ) { entry ->
+            ) { backStackEntry ->
+                val division = backStackEntry.arguments?.getString("division") ?: ""
+                val category = backStackEntry.arguments?.getString("category") ?: ""
+                val courseID = backStackEntry.arguments?.getString("courseID") ?: ""
                 ExamFilesScreen(
                     navController = navController,
-                    division = entry.arguments?.getString("division").orEmpty(),
-                    category = entry.arguments?.getString("category").orEmpty(),
-                    courseID = entry.arguments?.getString("courseID").orEmpty()
+                    division = division,
+                    category = category,
+                    courseID = courseID
                 )
             }
 
@@ -183,15 +212,16 @@ fun PhysicsHubNavGraph(
                 arguments = listOf(
                     navArgument("examId") { type = NavType.StringType }
                 )
-            ) { entry ->
+            ) { backStackEntry ->
+                val examId = backStackEntry.arguments?.getString("examId") ?: ""
                 ExamPreviewScreen(
                     navController = navController,
-                    examId = entry.arguments?.getString("examId").orEmpty()
+                    examId = examId
                 )
             }
 
             composable(Destinations.ExamUpload.route) {
-                ExamUploadScreen(navController)
+                ExamUploadScreen(navController = navController)
             }
         }
     }

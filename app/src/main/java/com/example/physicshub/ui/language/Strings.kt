@@ -158,4 +158,5 @@ object Strings {
             if (LocalLanguage.current == Language.ENGLISH) defaultEnglishStrings.navExams
             else defaultVietnameseStrings.navExams
         }
+
 }

@@ -27,11 +27,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.physicshub.R
 import com.example.physicshub.data.model.Event
 import com.example.physicshub.ui.navigation.Destinations
 import com.example.physicshub.ui.screens.events.viewmodel.EventViewModel
@@ -46,6 +49,7 @@ fun EventTrackerScreen(
     navController: NavController,
     viewModel: EventViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val selectedDate by viewModel.selectedDate.collectAsState()
     val eventsToDisplay by viewModel.eventsToDisplay.collectAsState()
     val allEvents by viewModel.events.collectAsState()
@@ -53,7 +57,6 @@ fun EventTrackerScreen(
     val isCalendarExpanded by viewModel.isCalendarExpanded.collectAsState()
     val isEventListExpanded by viewModel.isEventListExpanded.collectAsState()
 
-    // Tính toán dates with events
     val datesWithEvents = remember(allEvents) {
         allEvents.map { it.date }.toSet()
     }
@@ -62,7 +65,9 @@ fun EventTrackerScreen(
 
     LaunchedEffect(showSuccess) {
         if (showSuccess) {
-            snackbarHostState.showSnackbar("Đăng ký sự kiện thành công")
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.registration_success)
+            )
             viewModel.resetSuccessMessage()
         }
     }
@@ -70,12 +75,15 @@ fun EventTrackerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Event Tracker") },
+                title = { Text(stringResource(R.string.event_tracker_title)) },
                 actions = {
                     IconButton(onClick = {
                         navController.navigate(Destinations.EventCreate.route)
                     }) {
-                        Icon(Icons.Default.Add, contentDescription = "Create Event")
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = stringResource(R.string.create_event_description)
+                        )
                     }
                 }
             )
@@ -90,7 +98,7 @@ fun EventTrackerScreen(
             // Calendar Section
             item {
                 ExpandableSection(
-                    title = "Lịch sự kiện",
+                    title = stringResource(R.string.calendar_section_title),
                     isExpanded = isCalendarExpanded,
                     onToggleExpand = { viewModel.toggleCalendarExpanded() }
                 ) {
@@ -106,12 +114,19 @@ fun EventTrackerScreen(
 
             // Event List Section
             item {
+                val eventListTitle = if (selectedDate == null) {
+                    stringResource(R.string.all_events_title, eventsToDisplay.size)
+                } else {
+                    val dateStr = selectedDate!!.format(
+                        DateTimeFormatter.ofPattern(
+                            stringResource(R.string.date_format_short)
+                        )
+                    )
+                    stringResource(R.string.events_on_date_title, dateStr, eventsToDisplay.size)
+                }
+
                 ExpandableSection(
-                    title = if (selectedDate == null) {
-                        "Tất cả sự kiện (${eventsToDisplay.size})"
-                    } else {
-                        "Sự kiện ngày ${selectedDate!!.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))} (${eventsToDisplay.size})"
-                    },
+                    title = eventListTitle,
                     isExpanded = isEventListExpanded,
                     onToggleExpand = { viewModel.toggleEventListExpanded() }
                 ) {
@@ -124,9 +139,9 @@ fun EventTrackerScreen(
                         ) {
                             Text(
                                 text = if (selectedDate == null) {
-                                    "Chưa có sự kiện nào"
+                                    stringResource(R.string.no_events)
                                 } else {
-                                    "Không có sự kiện nào trong ngày này"
+                                    stringResource(R.string.no_events_on_date)
                                 },
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.Gray
@@ -167,6 +182,10 @@ fun ExpandableSection(
     onToggleExpand: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    val expandDescription = stringResource(
+        if (isExpanded) R.string.action_collapse else R.string.action_expand
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -178,7 +197,6 @@ fun ExpandableSection(
         )
     ) {
         Column {
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -195,12 +213,11 @@ fun ExpandableSection(
 
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    contentDescription = expandDescription,
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
 
-            // Content with animation
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically(),
@@ -237,7 +254,6 @@ fun SwipeToDeleteEventCard(
         }
     )
 
-    // Reset state khi event thay đổi
     LaunchedEffect(event.id) {
         dismissState.reset()
     }
@@ -254,7 +270,7 @@ fun SwipeToDeleteEventCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
+                    contentDescription = stringResource(R.string.delete_event_description),
                     tint = MaterialTheme.colorScheme.onErrorContainer
                 )
             }
@@ -271,11 +287,11 @@ fun SwipeToDeleteEventCard(
 
     if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = {
-                showDeleteDialog = false
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.delete_event_title)) },
+            text = {
+                Text(stringResource(R.string.delete_event_message, event.name))
             },
-            title = { Text("Xóa sự kiện") },
-            text = { Text("Bạn có chắc chắn muốn xóa sự kiện \"${event.name}\"?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -283,16 +299,15 @@ fun SwipeToDeleteEventCard(
                         showDeleteDialog = false
                     }
                 ) {
-                    Text("Xóa", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        stringResource(R.string.action_delete),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text("Hủy")
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )
@@ -312,7 +327,6 @@ fun CalendarView(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        // Month Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -323,7 +337,9 @@ fun CalendarView(
             }
 
             Text(
-                text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale("vi"))),
+                text = currentMonth.format(
+                    DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
+                ),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -335,9 +351,16 @@ fun CalendarView(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Weekday Headers
         Row(modifier = Modifier.fillMaxWidth()) {
-            listOf("CN", "T2", "T3", "T4", "T5", "T6", "T7").forEach { day ->
+            listOf(
+                stringResource(R.string.day_sunday),
+                stringResource(R.string.day_monday),
+                stringResource(R.string.day_tuesday),
+                stringResource(R.string.day_wednesday),
+                stringResource(R.string.day_thursday),
+                stringResource(R.string.day_friday),
+                stringResource(R.string.day_saturday)
+            ).forEach { day ->
                 Text(
                     text = day,
                     modifier = Modifier.weight(1f),
@@ -350,10 +373,8 @@ fun CalendarView(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Calendar Grid
         val firstDayOfMonth = currentMonth.atDay(1)
         val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
-
         val daysInMonth = currentMonth.lengthOfMonth()
         val totalCells = ((firstDayOfWeek + daysInMonth + 6) / 7) * 7
 
@@ -376,9 +397,7 @@ fun CalendarView(
                         day = dayNumber,
                         isSelected = isSelected,
                         hasEvent = hasEvent,
-                        onClick = {
-                            onDateSelected(date)
-                        }
+                        onClick = { onDateSelected(date) }
                     )
                 } else {
                     Spacer(modifier = Modifier.size(40.dp))
@@ -510,7 +529,7 @@ fun EventCard(
                 if (event.registeredUsers.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "${event.registeredUsers.size} người đã đăng ký",
+                        text = stringResource(R.string.already_registered, event.registeredUsers.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -523,7 +542,7 @@ fun EventCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete event",
+                    contentDescription = stringResource(R.string.delete_event_description),
                     tint = MaterialTheme.colorScheme.error
                 )
             }

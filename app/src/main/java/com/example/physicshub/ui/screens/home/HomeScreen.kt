@@ -269,7 +269,7 @@ fun UpcomingEventCard(
                         tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )
                     Text(
-                        text = "${event.date.format(DateTimeFormatter.ofPattern("MMM dd"))} • ${event.time.format(DateTimeFormatter.ofPattern("HH:mm"))}",
+                        text = "${event.date.format(DateTimeFormatter.ofPattern("dd/MM"))} • ${event.time.format(DateTimeFormatter.ofPattern("HH:mm"))}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )

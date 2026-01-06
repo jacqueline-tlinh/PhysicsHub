@@ -51,6 +51,19 @@ fun ExamPreviewScreen(
         viewModel.loadExamById(examId)
     }
 
+    // Save to recently viewed when exam loads
+    LaunchedEffect(currentExam) {
+        currentExam?.let { exam ->
+            viewModel.saveToRecentlyViewed(
+                context = context,
+                examId = exam.id,
+                course = exam.course,
+                examType = exam.examType,
+                year = exam.year
+            )
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

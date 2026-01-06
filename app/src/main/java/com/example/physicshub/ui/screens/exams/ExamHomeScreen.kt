@@ -8,41 +8,40 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.QuestionAnswer
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.physicshub.ui.components.PhysicsHubScaffold
+import com.example.physicshub.data.local.RecentlyViewedEntity
+import com.example.physicshub.data.model.ExamPaper
 import com.example.physicshub.ui.navigation.Destinations
-import com.example.physicshub.ui.theme.PhysicsHubTheme
-
-data class ExamPreviewItem(
-    val course: String,
-    val examType: String,
-    val semester: Int
-)
-
-private val mockRecentlyViewed = emptyList<ExamPreviewItem>()
-
-private val mockNewestUploads = listOf(
-    ExamPreviewItem("Calculus I", "Final", 2),
-    ExamPreviewItem("Physics I", "Midterm", 1),
-    ExamPreviewItem("Linear Algebra", "Final", 2)
-)
+import com.example.physicshub.ui.screens.exams.archive.ExamArchiveViewModel
 
 @Composable
 fun ExamHomeScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: ExamArchiveViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    val recentlyViewed by viewModel.recentlyViewed.collectAsState()
+    var newestUploads by remember { mutableStateOf<List<ExamPaper>>(emptyList()) }
+
+    // Initialize recently viewed and fetch newest uploads
+    LaunchedEffect(Unit) {
+        viewModel.initRecentlyViewed(context)
+        viewModel.getNewestUploads(3) { uploads ->
+            newestUploads = uploads
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -54,7 +53,7 @@ fun ExamHomeScreen(
         ExamFeatureCard(
             icon = Icons.Default.Description,
             title = "Exam Archive",
-            subtitle = "Browse past exam papers by subject and semester",
+            subtitle = "Browse past exam papers by division and category",
             containerColor = Color(0xFFE3F2FD),
             onClick = { navController.navigate(Destinations.ExamArchive.route) }
         )
@@ -70,18 +69,18 @@ fun ExamHomeScreen(
         // Recently viewed
         SectionHeader("Recently Viewed")
         RecentlyViewedSection(
-            items = mockRecentlyViewed,
-            onItemClick = {
-                // TODO: navigate to ExamPreviewScreen
+            items = recentlyViewed.take(4),
+            onItemClick = { item ->
+                navController.navigate(Destinations.ExamPreview.route(item.examId))
             }
         )
 
         // Newest uploads
         SectionHeader("Newest Uploads")
-        RecentlyViewedSection(
-            items = mockNewestUploads,
-            onItemClick = {
-                // TODO: navigate to ExamPreviewScreen
+        NewestUploadsSection(
+            items = newestUploads,
+            onItemClick = { exam ->
+                navController.navigate(Destinations.ExamPreview.route(exam.id))
             }
         )
 
@@ -97,7 +96,7 @@ fun ExamHomeScreen(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
             Text(
-                text = "Can’t find an exam you need? \nRequest it here.",
+                text = "Can't find an exam you need?\nRequest it here.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
             )
@@ -116,32 +115,51 @@ private fun SectionHeader(title: String) {
 
 @Composable
 private fun RecentlyViewedSection(
-    items: List<ExamPreviewItem>,
-    onItemClick: (ExamPreviewItem) -> Unit
+    items: List<RecentlyViewedEntity>,
+    onItemClick: (RecentlyViewedEntity) -> Unit
 ) {
     if (items.isEmpty()) {
-        EmptyStateCard()
+        EmptyStateCard("You haven't viewed any exam papers yet.\nStart browsing to see them here.")
         return
     }
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(items.take(4)) { item ->
-            ExamPreviewCard(item, onItemClick)
+        items(items) { item ->
+            RecentlyViewedCard(item, onItemClick)
         }
     }
 }
 
 @Composable
-private fun ExamPreviewCard(
-    item: ExamPreviewItem,
-    onClick: (ExamPreviewItem) -> Unit
+private fun NewestUploadsSection(
+    items: List<ExamPaper>,
+    onItemClick: (ExamPaper) -> Unit
+) {
+    if (items.isEmpty()) {
+        EmptyStateCard("No uploads yet.\nBe the first to contribute!")
+        return
+    }
+
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(items) { exam ->
+            NewestUploadCard(exam, onItemClick)
+        }
+    }
+}
+
+@Composable
+private fun RecentlyViewedCard(
+    item: RecentlyViewedEntity,
+    onClick: (RecentlyViewedEntity) -> Unit
 ) {
     Card(
         modifier = Modifier
-            .width(220.dp)
-            .height(120.dp)
+            .width(200.dp)
+            .height(110.dp)
             .clickable { onClick(item) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -150,18 +168,73 @@ private fun ExamPreviewCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(item.course, style = MaterialTheme.typography.titleSmall)
-            Text(item.examType, style = MaterialTheme.typography.bodySmall)
-            Text("Semester ${item.semester}", style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = item.course,
+                style = MaterialTheme.typography.titleSmall
+            )
+            Column {
+                Text(
+                    text = item.examType.uppercase(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Year ${item.year}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun EmptyStateCard() {
+private fun NewestUploadCard(
+    exam: ExamPaper,
+    onClick: (ExamPaper) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(200.dp)
+            .height(110.dp)
+            .clickable { onClick(exam) },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFE8F5E9)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = exam.course,
+                style = MaterialTheme.typography.titleSmall
+            )
+            Column {
+                Text(
+                    text = exam.examType.uppercase(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Year ${exam.year}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyStateCard(message: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -176,7 +249,7 @@ private fun EmptyStateCard() {
             modifier = Modifier.fillMaxSize()
         ) {
             Text(
-                "You haven’t viewed any exam papers yet.\nStart browsing to see them here.",
+                text = message,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -185,21 +258,19 @@ private fun EmptyStateCard() {
     }
 }
 
-
 @Composable
 private fun ExamFeatureCard(
     icon: ImageVector,
     title: String,
     subtitle: String,
     enabled: Boolean = true,
-    large: Boolean = false,
     containerColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     onClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = if (large) 110.dp else 72.dp)
+            .heightIn(min = 72.dp)
             .then(
                 if (enabled && onClick != null) {
                     Modifier.clickable { onClick() }
@@ -211,17 +282,17 @@ private fun ExamFeatureCard(
         colors = CardDefaults.cardColors(
             containerColor = containerColor
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp) // subtle lift
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
-            modifier = Modifier.padding(if (large) 20.dp else 16.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(if (large) 40.dp else 32.dp)
+                modifier = Modifier.size(32.dp)
             )
 
             Spacer(modifier = Modifier.width(20.dp))
@@ -229,10 +300,7 @@ private fun ExamFeatureCard(
             Column {
                 Text(
                     text = title,
-                    style = if (large)
-                        MaterialTheme.typography.headlineSmall
-                    else
-                        MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -245,18 +313,4 @@ private fun ExamFeatureCard(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ExamHomePreview() {
-    PhysicsHubTheme {
-        val navController = rememberNavController()
-        PhysicsHubScaffold(navController = navController) { padding ->
-            ExamHomeScreen(
-                navController = navController
-            )
-        }
-    }
-
 }

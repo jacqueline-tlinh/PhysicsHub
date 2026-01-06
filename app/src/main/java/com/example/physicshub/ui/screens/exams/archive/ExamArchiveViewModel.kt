@@ -1,11 +1,15 @@
 package com.example.physicshub.ui.screens.exams.archive
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.physicshub.data.local.AppDatabase
+import com.example.physicshub.data.local.RecentlyViewedEntity
 import com.example.physicshub.data.model.ExamMetadata
 import com.example.physicshub.data.model.ExamPaper
 import com.example.physicshub.data.repository.ExamArchiveRepository
 import com.example.physicshub.data.repository.MetadataRepository
+import com.example.physicshub.data.repository.RecentlyViewedRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +20,7 @@ class ExamArchiveViewModel(
     private val archiveRepository: ExamArchiveRepository = ExamArchiveRepository()
 ) : ViewModel() {
 
+    private var recentlyViewedRepository: RecentlyViewedRepository? = null
     private val _metadata = MutableStateFlow<List<ExamMetadata>>(emptyList())
     val metadata: StateFlow<List<ExamMetadata>> = _metadata.asStateFlow()
 
@@ -31,8 +36,24 @@ class ExamArchiveViewModel(
     private val _currentExam = MutableStateFlow<ExamPaper?>(null)
     val currentExam: StateFlow<ExamPaper?> = _currentExam.asStateFlow()
 
+    private val _recentlyViewed = MutableStateFlow<List<RecentlyViewedEntity>>(emptyList())
+    val recentlyViewed: StateFlow<List<RecentlyViewedEntity>> = _recentlyViewed.asStateFlow()
+
     init {
         loadMetadata()
+    }
+
+    fun initRecentlyViewed(context: Context) {
+        if (recentlyViewedRepository == null) {
+            val database = AppDatabase.getDatabase(context)
+            recentlyViewedRepository = RecentlyViewedRepository(database.recentlyViewedDao())
+
+            viewModelScope.launch {
+                recentlyViewedRepository?.getRecentlyViewed(10)?.collect { items ->
+                    _recentlyViewed.value = items
+                }
+            }
+        }
     }
 
     private fun loadMetadata() {
@@ -65,6 +86,24 @@ class ExamArchiveViewModel(
         viewModelScope.launch {
             val uploads = archiveRepository.getNewestUploads(limit)
             callback(uploads)
+        }
+    }
+
+    fun saveToRecentlyViewed(
+        context: Context,
+        examId: String,
+        course: String,
+        examType: String,
+        year: Int
+    ) {
+        initRecentlyViewed(context)
+        viewModelScope.launch {
+            recentlyViewedRepository?.addRecentlyViewed(
+                examId = examId,
+                course = course,
+                examType = examType,
+                year = year
+            )
         }
     }
 }

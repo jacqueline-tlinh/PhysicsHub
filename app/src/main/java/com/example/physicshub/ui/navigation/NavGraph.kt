@@ -8,9 +8,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.physicshub.ui.components.PhysicsHubScaffold
-import com.example.physicshub.ui.screens.events.EventTrackerScreen
 import com.example.physicshub.ui.screens.events.EventCreateScreen
 import com.example.physicshub.ui.screens.events.EventRegistrationScreen
+import com.example.physicshub.ui.screens.events.EventTrackerScreen
 import com.example.physicshub.ui.screens.events.viewmodel.EventViewModel
 import com.example.physicshub.ui.screens.exams.ExamHomeScreen
 import com.example.physicshub.ui.screens.exams.archive.ExamArchiveRootScreen
@@ -27,6 +27,7 @@ import com.example.physicshub.ui.screens.notices.NoticeScreen
 fun PhysicsHubNavGraph() {
     val navController = rememberNavController()
 
+    // 🔹 Shared EventViewModel (lấy từ code 2)
     val eventViewModel: EventViewModel = viewModel()
 
     PhysicsHubScaffold(navController = navController) { padding ->
@@ -47,10 +48,15 @@ fun PhysicsHubNavGraph() {
                 )
             }
 
+            // ===== HOME (đã gắn EventViewModel)
             composable(Destinations.Home.route) {
-                HomeScreen(navController)
+                HomeScreen(
+                    navController = navController,
+                    eventViewModel = eventViewModel
+                )
             }
 
+            // ===== EVENTS (giữ route code 1, logic code 2)
             composable(Destinations.Events.route) {
                 EventTrackerScreen(navController, eventViewModel)
             }
@@ -80,6 +86,10 @@ fun PhysicsHubNavGraph() {
             composable(Destinations.Notices.route) {
                 NoticeScreen(navController)
             }
+
+            // ======================
+            // ===== EXAM PART (GIỮ NGUYÊN 100% CODE 1)
+            // ======================
 
             composable(Destinations.Exams.route) {
                 ExamHomeScreen(navController)
@@ -120,14 +130,14 @@ fun PhysicsHubNavGraph() {
                 arguments = listOf(
                     navArgument("division") { type = NavType.StringType },
                     navArgument("category") { type = NavType.StringType },
-                    navArgument("courseID") { type = NavType.StringType }  // Changed from "course" to "courseID"
+                    navArgument("courseID") { type = NavType.StringType }
                 )
             ) { entry ->
                 ExamFilesScreen(
                     navController = navController,
                     division = entry.arguments?.getString("division").orEmpty(),
                     category = entry.arguments?.getString("category").orEmpty(),
-                    courseID = entry.arguments?.getString("courseID").orEmpty()  // Changed parameter name
+                    courseID = entry.arguments?.getString("courseID").orEmpty()
                 )
             }
 

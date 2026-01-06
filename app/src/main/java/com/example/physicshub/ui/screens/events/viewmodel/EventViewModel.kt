@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import java.time.LocalTime
@@ -37,6 +38,21 @@ class EventViewModel : ViewModel() {
             initialValue = emptyList()
         )
 
+    // Upcoming events - filtered in ViewModel for Home Screen
+    val upcomingEvents: StateFlow<List<Event>> = _events
+        .map { eventsList ->
+            val today = LocalDate.now()
+            eventsList
+                .filter { it.date >= today }
+                .sortedWith(compareBy({ it.date }, { it.time }))
+                .take(10) // Limit to 10 most recent upcoming events
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     private val _registrations = MutableStateFlow<List<EventRegistration>>(emptyList())
     val registrations: StateFlow<List<EventRegistration>> = _registrations.asStateFlow()
 
@@ -56,41 +72,42 @@ class EventViewModel : ViewModel() {
     }
 
     private fun addSampleEvents() {
+        // Sample events with English content
         val sampleEvents = listOf(
             Event(
-                name = "AI Seminar",
+                name = "AI & Machine Learning Seminar",
                 date = LocalDate.now().plusDays(2),
                 time = LocalTime.of(14, 0),
                 location = "Room A101",
-                note = "Guest speaker from Google"
+                note = "Guest speaker from Google AI Research. Topics include deep learning and neural networks."
             ),
             Event(
-                name = "Physics Workshop",
+                name = "Quantum Physics Workshop",
                 date = LocalDate.now().plusDays(5),
                 time = LocalTime.of(10, 30),
-                location = "Lab Building",
-                note = "Hands-on quantum mechanics"
+                location = "Physics Lab Building",
+                note = "Hands-on experiments with quantum mechanics principles. Bring your lab notebook."
             ),
             Event(
-                name = "Career Fair",
+                name = "Career Fair 2025",
                 date = LocalDate.now(),
                 time = LocalTime.of(9, 0),
                 location = "Main Hall",
-                note = "Meet top tech companies"
+                note = "Meet recruiters from top tech companies. Prepare your resume and portfolio."
             ),
             Event(
-                name = "Math Competition",
+                name = "Mathematics Competition",
                 date = LocalDate.now().plusDays(1),
                 time = LocalTime.of(13, 0),
                 location = "Room B205",
-                note = "Regional mathematics olympiad"
+                note = "Regional mathematics olympiad qualifying round. Registration required."
             ),
             Event(
-                name = "Coding Bootcamp",
+                name = "Full-Stack Coding Bootcamp",
                 date = LocalDate.now().plusDays(3),
                 time = LocalTime.of(15, 30),
-                location = "Computer Lab",
-                note = "Learn React and Node.js"
+                location = "Computer Lab 3",
+                note = "Learn React, Node.js, and MongoDB. Beginners welcome. Laptops required."
             )
         )
         _events.value = sampleEvents

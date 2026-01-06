@@ -4,14 +4,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.physicshub.R
 import com.example.physicshub.ui.screens.events.viewmodel.EventViewModel
 import java.time.LocalDate
 import java.time.LocalTime
@@ -47,10 +49,13 @@ fun EventCreateScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tạo sự kiện mới") },
+                title = { Text(stringResource(R.string.event_create_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back)
+                        )
                     }
                 }
             )
@@ -64,7 +69,7 @@ fun EventCreateScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Thông tin sự kiện",
+                text = stringResource(R.string.event_info_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -78,12 +83,12 @@ fun EventCreateScreen(
                     eventName = it
                     eventNameError = false
                 },
-                label = { Text("Tên sự kiện") },
+                label = { Text(stringResource(R.string.label_event_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = eventNameError,
                 supportingText = {
                     if (eventNameError) {
-                        Text("Vui lòng nhập tên sự kiện")
+                        Text(stringResource(R.string.error_event_name_required))
                     }
                 },
                 singleLine = true
@@ -98,7 +103,7 @@ fun EventCreateScreen(
             ) {
                 Column {
                     Text(
-                        text = "Ngày diễn ra",
+                        text = stringResource(R.string.label_event_date),
                         style = MaterialTheme.typography.labelMedium
                     )
                     Text(
@@ -117,7 +122,7 @@ fun EventCreateScreen(
             ) {
                 Column {
                     Text(
-                        text = "Thời gian",
+                        text = stringResource(R.string.label_event_time),
                         style = MaterialTheme.typography.labelMedium
                     )
                     Text(
@@ -136,12 +141,12 @@ fun EventCreateScreen(
                     location = it
                     locationError = false
                 },
-                label = { Text("Địa điểm") },
+                label = { Text(stringResource(R.string.label_location)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = locationError,
                 supportingText = {
                     if (locationError) {
-                        Text("Vui lòng nhập địa điểm")
+                        Text(stringResource(R.string.error_location_required))
                     }
                 },
                 singleLine = true
@@ -153,7 +158,7 @@ fun EventCreateScreen(
             OutlinedTextField(
                 value = note,
                 onValueChange = { note = it },
-                label = { Text("Ghi chú") },
+                label = { Text(stringResource(R.string.label_note)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
@@ -193,7 +198,7 @@ fun EventCreateScreen(
                     .height(50.dp)
             ) {
                 Text(
-                    text = "Tạo sự kiện",
+                    text = stringResource(R.string.action_create_event),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
@@ -213,12 +218,12 @@ fun EventCreateScreen(
                         showDatePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Hủy")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         ) {
@@ -240,12 +245,12 @@ fun EventCreateScreen(
                         showTimePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTimePicker = false }) {
-                    Text("Hủy")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
             text = {

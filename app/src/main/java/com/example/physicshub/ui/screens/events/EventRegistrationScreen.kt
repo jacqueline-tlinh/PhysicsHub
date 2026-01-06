@@ -13,10 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.physicshub.R
 import com.example.physicshub.ui.screens.events.viewmodel.EventViewModel
 import java.time.format.DateTimeFormatter
 
@@ -44,10 +46,13 @@ fun EventRegistrationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Đăng ký sự kiện") },
+                title = { Text(stringResource(R.string.event_registration_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back)
+                        )
                     }
                 }
             )
@@ -82,12 +87,12 @@ fun EventRegistrationScreen(
                     userName = it
                     isError = false
                 },
-                label = { Text("Họ và tên") },
+                label = { Text(stringResource(R.string.label_full_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = isError,
                 supportingText = {
                     if (isError) {
-                        Text("Vui lòng nhập tên của bạn")
+                        Text(stringResource(R.string.error_name_required))
                     }
                 },
                 singleLine = true
@@ -97,7 +102,7 @@ fun EventRegistrationScreen(
 
             // Event Details Section
             Text(
-                text = "Chi tiết sự kiện",
+                text = stringResource(R.string.event_details_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -113,7 +118,7 @@ fun EventRegistrationScreen(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = "Ngày",
+                label = stringResource(R.string.label_date),
                 value = event.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
             )
 
@@ -128,7 +133,7 @@ fun EventRegistrationScreen(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = "Thời gian",
+                label = stringResource(R.string.label_time),
                 value = event.time.format(DateTimeFormatter.ofPattern("HH:mm"))
             )
 
@@ -143,7 +148,7 @@ fun EventRegistrationScreen(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = "Địa điểm",
+                label = stringResource(R.string.label_location),
                 value = event.location
             )
 
@@ -158,7 +163,7 @@ fun EventRegistrationScreen(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = "Ghi chú",
+                label = stringResource(R.string.label_note),
                 value = event.note
             )
 
@@ -179,7 +184,7 @@ fun EventRegistrationScreen(
                     .height(50.dp)
             ) {
                 Text(
-                    text = "Đăng ký ngay",
+                    text = stringResource(R.string.action_register),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
@@ -189,7 +194,7 @@ fun EventRegistrationScreen(
             // Already Registered Count
             if (event.registeredUsers.isNotEmpty()) {
                 Text(
-                    text = "Đã có ${event.registeredUsers.size} người đăng ký",
+                    text = stringResource(R.string.already_registered, event.registeredUsers.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray,
                     modifier = Modifier.align(Alignment.CenterHorizontally)

@@ -1,3 +1,73 @@
 <resources>
-    <string name="app_name">PhysicsHub</string>
+    <!-- App Name -->
+    <string name="app_name">Physics Hub</string>
+
+    <!-- Common Actions -->
+    <string name="action_create">Create</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_ok">OK</string>
+    <string name="action_back">Back</string>
+    <string name="action_register">Register Now</string>
+    <string name="action_expand">Expand</string>
+    <string name="action_collapse">Collapse</string>
+
+    <!-- Event Tracker Screen -->
+    <string name="event_tracker_title">Event Tracker</string>
+    <string name="calendar_section_title">Event Calendar</string>
+    <string name="all_events_title">All Events (%1$d)</string>
+    <string name="events_on_date_title">Events on %1$s (%2$d)</string>
+    <string name="no_events">No events yet</string>
+    <string name="no_events_on_date">No events on this date</string>
+    <string name="create_event_description">Create Event</string>
+    <string name="no_upcoming_events">No upcoming events</string>
+    <string name="upcoming_events_description">View upcoming events</string>
+
+    <!-- Calendar -->
+    <string name="day_sunday">Sun</string>
+    <string name="day_monday">Mon</string>
+    <string name="day_tuesday">Tue</string>
+    <string name="day_wednesday">Wed</string>
+    <string name="day_thursday">Thu</string>
+    <string name="day_friday">Fri</string>
+    <string name="day_saturday">Sat</string>
+
+    <!-- Event Registration Screen -->
+    <string name="event_registration_title">Event Registration</string>
+    <string name="label_full_name">Full Name</string>
+    <string name="error_name_required">Please enter your name</string>
+    <string name="event_details_title">Event Details</string>
+    <string name="label_date">Date</string>
+    <string name="label_time">Time</string>
+    <string name="label_location">Location</string>
+    <string name="label_note">Note</string>
+    <string name="registration_success">Event registration successful</string>
+    <string name="already_registered">%1$d people registered</string>
+
+    <!-- Event Create Screen -->
+    <string name="event_create_title">Create New Event</string>
+    <string name="event_info_title">Event Information</string>
+    <string name="label_event_name">Event Name</string>
+    <string name="error_event_name_required">Please enter event name</string>
+    <string name="label_event_date">Event Date</string>
+    <string name="label_event_time">Event Time</string>
+    <string name="error_location_required">Please enter location</string>
+    <string name="action_create_event">Create Event</string>
+
+    <!-- Delete Dialog -->
+    <string name="delete_event_title">Delete Event</string>
+    <string name="delete_event_message">Are you sure you want to delete the event \"%1$s\"?</string>
+    <string name="delete_event_description">Delete event</string>
+
+    <!-- Event Types (Sample) -->
+    <string name="event_type_seminar">Seminar</string>
+    <string name="event_type_workshop">Workshop</string>
+    <string name="event_type_career_fair">Career Fair</string>
+    <string name="event_type_competition">Competition</string>
+    <string name="event_type_bootcamp">Bootcamp</string>
+
+    <!-- Date Format Patterns -->
+    <string name="date_format_full">MMMM yyyy</string>
+    <string name="date_format_short">dd/MM/yyyy</string>
+    <string name="time_format">HH:mm</string>
 </resources>

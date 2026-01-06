@@ -39,6 +39,7 @@ import com.example.physicshub.R
 import com.example.physicshub.data.model.Event
 import com.example.physicshub.data.model.ExamPaper
 import com.example.physicshub.data.repository.AuthRepository
+import com.example.physicshub.ui.components.ProfileMenuDrawer
 import com.example.physicshub.ui.components.ThemeToggle
 import com.example.physicshub.ui.language.Language
 import com.example.physicshub.ui.language.LanguageManager
@@ -77,6 +78,9 @@ fun HomeScreen(
     // Get current user from AuthRepository
     val currentUser by authRepository.getCurrentUser().collectAsState(initial = null)
 
+    // Profile menu state
+    var showProfileMenu by remember { mutableStateOf(false) }
+
     val notices = cachedNotices.map { notice ->
         notice.copy(isRead = readIds.contains(notice.id))
     }
@@ -90,54 +94,83 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            HomeTopBar(
-                userName = currentUser?.fullName ?: "User",
-                currentLanguage = currentLanguage,
-                onLanguageToggle = {
-                    scope.launch {
-                        languageManager.toggleLanguage()
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                HomeTopBar(
+                    userName = currentUser?.fullName ?: "User",
+                    currentLanguage = currentLanguage,
+                    onLanguageToggle = {
+                        scope.launch {
+                            languageManager.toggleLanguage()
+                        }
+                    },
+                    isDarkMode = isDarkMode,
+                    onThemeToggle = {
+                        themeViewModel.toggleTheme()
+                    },
+                    onProfileClick = {
+                        showProfileMenu = !showProfileMenu
                     }
-                },
-                isDarkMode = isDarkMode,
-                onThemeToggle = {
-                    themeViewModel.toggleTheme()
-                }
-            )
+                )
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(32.dp)
+            ) {
+                UpcomingEventsSection(
+                    events = upcomingEvents,
+                    onViewMoreClick = { navController.navigate(Destinations.EventTracker.route) },
+                    onEventClick = { event ->
+                        navController.navigate(
+                            Destinations.EventRegistration.route(event.id)
+                        )
+                    }
+                )
+
+                NoticeBoardSection(
+                    notices = notices.take(4),
+                    onViewMoreClick = { navController.navigate("notices") },
+                    onNoticeClick = { navController.navigate("notices") }
+                )
+
+                NewestExamUploadsSection(
+                    uploads = newestUploads,
+                    onViewMoreClick = { navController.navigate(Destinations.ExamArchive.route) },
+                    onExamClick = { exam ->
+                        navController.navigate(Destinations.ExamPreview.route(exam.id))
+                    }
+                )
+            }
         }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(32.dp)
-        ) {
-            UpcomingEventsSection(
-                events = upcomingEvents,
-                onViewMoreClick = { navController.navigate(Destinations.EventTracker.route) },
-                onEventClick = { event ->
-                    navController.navigate(
-                        Destinations.EventRegistration.route(event.id)
-                    )
-                }
-            )
 
-            NoticeBoardSection(
-                notices = notices.take(4),
-                onViewMoreClick = { navController.navigate("notices") },
-                onNoticeClick = { navController.navigate("notices") }
-            )
-
-            NewestExamUploadsSection(
-                uploads = newestUploads,
-                onViewMoreClick = { navController.navigate(Destinations.ExamArchive.route) },
-                onExamClick = { exam ->
-                    navController.navigate(Destinations.ExamPreview.route(exam.id))
-                }
-            )
+        // Profile Menu Drawer (positioned below top bar)
+        if (showProfileMenu) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 72.dp) // Adjust based on your top bar height
+            ) {
+                ProfileMenuDrawer(
+                    isVisible = showProfileMenu,
+                    userName = currentUser?.fullName ?: "User",
+                    studentId = currentUser?.studentId ?: "N/A",
+                    onDismiss = { showProfileMenu = false },
+                    onLogoutClick = {
+                        scope.launch {
+                            authRepository.logout()
+                            navController.navigate("login") {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -323,11 +356,13 @@ fun HomeTopBar(
     currentLanguage: Language,
     onLanguageToggle: () -> Unit,
     isDarkMode: Boolean,
-    onThemeToggle: () -> Unit
+    onThemeToggle: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp
     ) {
         Row(
             modifier = Modifier
@@ -335,13 +370,13 @@ fun HomeTopBar(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Profile Picture from drawable
             Image(
                 painter = painterResource(id = R.drawable.profile),
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape),
+                    .clip(CircleShape)
+                    .clickable(onClick = onProfileClick),
                 contentScale = ContentScale.Crop
             )
 

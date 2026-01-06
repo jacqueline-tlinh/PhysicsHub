@@ -1,12 +1,21 @@
 package com.example.physicshub.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import com.example.physicshub.data.repository.AuthRepository
 import com.example.physicshub.ui.components.PhysicsHubScaffold
 import com.example.physicshub.ui.screens.events.EventCreateScreen
 import com.example.physicshub.ui.screens.events.EventRegistrationScreen
@@ -29,15 +38,39 @@ fun PhysicsHubNavGraph(
     themeViewModel: ThemeViewModel  // ✅ THÊM PARAMETER NÀY
 ) {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val authRepository = remember { AuthRepository.getInstance(context) }
 
-    // 🔹 Shared EventViewModel
+    // Check if user is logged in
+    val isLoggedIn by authRepository.isLoggedIn().collectAsState(initial = null)
+
+    // Show loading screen while checking auth state
+    if (isLoggedIn == null) {
+        // Simple loading screen
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    // Determine start destination based on login state
+    val startDestination = if (isLoggedIn == true) {
+        Destinations.Home.route
+    } else {
+        Destinations.Login.route
+    }
+
+    // Shared EventViewModel
     val eventViewModel: EventViewModel = viewModel()
 
     PhysicsHubScaffold(navController = navController) { padding ->
 
         NavHost(
             navController = navController,
-            startDestination = Destinations.Login.route,
+            startDestination = startDestination,
             modifier = Modifier.padding(padding)
         ) {
 
@@ -51,16 +84,14 @@ fun PhysicsHubNavGraph(
                 )
             }
 
-            // ===== HOME (đã gắn EventViewModel + ThemeViewModel)
             composable(Destinations.Home.route) {
                 HomeScreen(
                     navController = navController,
                     eventViewModel = eventViewModel,
-                    themeViewModel = themeViewModel  // ✅ THÊM DÒNG NÀY
+                    themeViewModel = themeViewModel
                 )
             }
 
-            // ===== EVENTS (giữ route code 1, logic code 2)
             composable(Destinations.Events.route) {
                 EventTrackerScreen(navController, eventViewModel)
             }
@@ -91,9 +122,6 @@ fun PhysicsHubNavGraph(
                 NoticeScreen(navController)
             }
 
-            // ======================
-            // ===== EXAM PART (GIỮ NGUYÊN 100%)
-            // ======================
 
             composable(Destinations.Exams.route) {
                 ExamHomeScreen(navController)

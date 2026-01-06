@@ -22,12 +22,15 @@ import com.example.physicshub.ui.screens.exams.upload.ExamUploadScreen
 import com.example.physicshub.ui.screens.home.HomeScreen
 import com.example.physicshub.ui.screens.login.LoginScreen
 import com.example.physicshub.ui.screens.notices.NoticeScreen
+import com.example.physicshub.ui.theme.ThemeViewModel
 
 @Composable
-fun PhysicsHubNavGraph() {
+fun PhysicsHubNavGraph(
+    themeViewModel: ThemeViewModel  // ✅ THÊM PARAMETER NÀY
+) {
     val navController = rememberNavController()
 
-    // 🔹 Shared EventViewModel (lấy từ code 2)
+    // 🔹 Shared EventViewModel
     val eventViewModel: EventViewModel = viewModel()
 
     PhysicsHubScaffold(navController = navController) { padding ->
@@ -48,11 +51,12 @@ fun PhysicsHubNavGraph() {
                 )
             }
 
-            // ===== HOME (đã gắn EventViewModel)
+            // ===== HOME (đã gắn EventViewModel + ThemeViewModel)
             composable(Destinations.Home.route) {
                 HomeScreen(
                     navController = navController,
-                    eventViewModel = eventViewModel
+                    eventViewModel = eventViewModel,
+                    themeViewModel = themeViewModel  // ✅ THÊM DÒNG NÀY
                 )
             }
 
@@ -88,7 +92,7 @@ fun PhysicsHubNavGraph() {
             }
 
             // ======================
-            // ===== EXAM PART (GIỮ NGUYÊN 100% CODE 1)
+            // ===== EXAM PART (GIỮ NGUYÊN 100%)
             // ======================
 
             composable(Destinations.Exams.route) {

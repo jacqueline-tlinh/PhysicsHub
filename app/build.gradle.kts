@@ -79,4 +79,9 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+    // DataStore cho việc lưu theme preference
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Material Icons Extended (cho Light/Dark Mode icons)
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
 }

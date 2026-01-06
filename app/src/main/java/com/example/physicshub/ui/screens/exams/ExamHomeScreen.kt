@@ -23,6 +23,7 @@ import com.example.physicshub.data.local.RecentlyViewedEntity
 import com.example.physicshub.data.model.ExamPaper
 import com.example.physicshub.ui.navigation.Destinations
 import com.example.physicshub.ui.screens.exams.archive.ExamArchiveViewModel
+import com.example.physicshub.ui.theme.extendedColors
 
 @Composable
 fun ExamHomeScreen(
@@ -54,7 +55,7 @@ fun ExamHomeScreen(
             icon = Icons.Default.Description,
             title = "Exam Archive",
             subtitle = "Browse past exam papers by division and category",
-            containerColor = Color(0xFFE3F2FD),
+            containerColor = MaterialTheme.extendedColors.examArchiveBlue,
             onClick = { navController.navigate(Destinations.ExamArchive.route) }
         )
 
@@ -62,7 +63,7 @@ fun ExamHomeScreen(
             icon = Icons.Default.FileUpload,
             title = "Upload Papers",
             subtitle = "Contribute exam papers for others to review",
-            containerColor = Color(0xFFE8F5E9),
+            containerColor = MaterialTheme.extendedColors.examUploadGreen,
             onClick = { navController.navigate(Destinations.ExamUpload.route) }
         )
 
@@ -204,7 +205,7 @@ private fun NewestUploadCard(
             .clickable { onClick(exam) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE8F5E9)
+            containerColor = MaterialTheme.extendedColors.examUploadGreen
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -241,7 +242,7 @@ private fun EmptyStateCard(message: String) {
             .height(100.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF2F2F2)
+            containerColor = MaterialTheme.extendedColors.examEmptyState
         )
     ) {
         Box(
@@ -264,7 +265,7 @@ private fun ExamFeatureCard(
     title: String,
     subtitle: String,
     enabled: Boolean = true,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    containerColor: Color,
     onClick: (() -> Unit)? = null
 ) {
     Card(

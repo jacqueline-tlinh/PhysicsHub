@@ -28,15 +28,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.physicshub.R
 import com.example.physicshub.data.model.Event
 import com.example.physicshub.data.model.ExamPaper
-import com.example.physicshub.ui.components.PhysicsHubScaffold
+import com.example.physicshub.ui.components.ThemeToggle
 import com.example.physicshub.ui.language.Language
 import com.example.physicshub.ui.language.LanguageManager
 import com.example.physicshub.ui.language.Strings
@@ -47,7 +45,8 @@ import com.example.physicshub.ui.screens.notices.Notice
 import com.example.physicshub.ui.screens.notices.NoticeCategory
 import com.example.physicshub.ui.screens.notices.NoticeRepository
 import com.example.physicshub.ui.screens.notices.mockNotices
-import com.example.physicshub.ui.theme.PhysicsHubTheme
+import com.example.physicshub.ui.theme.ThemeViewModel
+import com.example.physicshub.ui.theme.extendedColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
@@ -56,7 +55,8 @@ import java.time.format.DateTimeFormatter
 fun HomeScreen(
     navController: NavController,
     examViewModel: ExamArchiveViewModel = viewModel(),
-    eventViewModel: EventViewModel = viewModel() // Shared EventViewModel
+    eventViewModel: EventViewModel = viewModel(),
+    themeViewModel: ThemeViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val repository = remember { NoticeRepository.getInstance(context) }
@@ -66,14 +66,13 @@ fun HomeScreen(
     val cachedNotices by repository.cachedNotices.collectAsState(initial = mockNotices)
     val readIds by repository.readNoticeIds.collectAsState(initial = emptySet())
     val currentLanguage by languageManager.currentLanguage.collectAsState(initial = Language.ENGLISH)
+    val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 
     val notices = cachedNotices.map { notice ->
         notice.copy(isRead = readIds.contains(notice.id))
     }
 
     var newestUploads by remember { mutableStateOf<List<ExamPaper>>(emptyList()) }
-
-    // Subscribe to upcoming events from shared EventViewModel
     val upcomingEvents by eventViewModel.upcomingEvents.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -93,6 +92,10 @@ fun HomeScreen(
                 },
                 onNotificationClick = {
                     navController.navigate("notifications")
+                },
+                isDarkMode = isDarkMode,
+                onThemeToggle = {
+                    themeViewModel.toggleTheme()
                 }
             )
         }
@@ -105,7 +108,6 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            // Replace SectionPlaceholder with real Upcoming Events
             UpcomingEventsSection(
                 events = upcomingEvents,
                 onViewMoreClick = { navController.navigate(Destinations.EventTracker.route) },
@@ -172,7 +174,6 @@ fun UpcomingEventsSection(
         Spacer(modifier = Modifier.height(12.dp))
 
         if (events.isEmpty()) {
-            // Empty state
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -204,7 +205,6 @@ fun UpcomingEventsSection(
                 }
             }
         } else {
-            // Horizontal scrollable event cards
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(end = 16.dp)
@@ -247,7 +247,6 @@ fun UpcomingEventCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Event Name
                 Text(
                     text = event.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -257,7 +256,6 @@ fun UpcomingEventCard(
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
-                // Date & Time
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -275,7 +273,6 @@ fun UpcomingEventCard(
                     )
                 }
 
-                // Location
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -295,7 +292,6 @@ fun UpcomingEventCard(
                     )
                 }
 
-                // Registration count badge
                 if (event.registeredUsers.isNotEmpty()) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
@@ -318,7 +314,9 @@ fun UpcomingEventCard(
 fun HomeTopBar(
     currentLanguage: Language,
     onLanguageToggle: () -> Unit,
-    onNotificationClick: () -> Unit
+    onNotificationClick: () -> Unit,
+    isDarkMode: Boolean,
+    onThemeToggle: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -350,6 +348,13 @@ fun HomeTopBar(
                     fontWeight = FontWeight.SemiBold
                 )
             }
+
+            ThemeToggle(
+                isDarkMode = isDarkMode,
+                onToggle = onThemeToggle
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
 
             LanguageToggle(
                 currentLanguage = currentLanguage,
@@ -503,7 +508,10 @@ fun PagerIndicator(
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(
-                        if (isSelected) Color.Gray else Color.LightGray
+                        if (isSelected)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
                     )
             )
         }
@@ -546,7 +554,7 @@ fun NoticeSliderCard(
                 Text(
                     text = notice.category.translatedName(),
                     style = MaterialTheme.typography.labelMedium,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Text(
@@ -555,7 +563,7 @@ fun NoticeSliderCard(
                     fontWeight = FontWeight.Medium,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -613,7 +621,7 @@ fun NewestExamUploadsSection(
                     .fillMaxWidth()
                     .height(100.dp),
                 shape = RoundedCornerShape(16.dp),
-                color = Color(0xFFF2F2F2)
+                color = MaterialTheme.extendedColors.examEmptyState
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -652,7 +660,7 @@ fun ExamUploadCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFFE8F5E9)
+        color = MaterialTheme.extendedColors.examUploadGreen
     ) {
         Row(
             modifier = Modifier
@@ -686,19 +694,6 @@ fun ExamUploadCard(
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeWithBottomNavPreview() {
-    PhysicsHubTheme {
-        val navController = rememberNavController()
-        PhysicsHubScaffold(navController = navController) { padding ->
-            HomeScreen(
-                navController = navController
-            )
         }
     }
 }

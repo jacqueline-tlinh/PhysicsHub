@@ -13,20 +13,15 @@ import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.physicshub.ui.language.Strings
-import com.example.physicshub.ui.theme.PhysicsHubTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -136,8 +131,7 @@ private fun formatCount(count: Int): String {
 }
 
 @Composable
-@ReadOnlyComposable
-fun NoticeCategory.translatedName(): String {
+private fun NoticeCategory.translatedName(): String {
     return when (this) {
         NoticeCategory.ACADEMIC_AFFAIRS -> Strings.academicAffairs
         NoticeCategory.RESEARCH -> Strings.research
@@ -211,7 +205,7 @@ fun NoticeListCard(
                     Text(
                         text = notice.category.translatedName(),
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (!notice.isRead) {
                         Box(
@@ -228,13 +222,14 @@ fun NoticeListCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = if (!notice.isRead) FontWeight.Bold else FontWeight.Medium,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Text(
                     text = notice.content,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -242,7 +237,7 @@ fun NoticeListCard(
                 Text(
                     text = notice.date,
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -267,31 +262,14 @@ fun NoticeListCard(
                         else
                             Icons.Default.MarkEmailRead,
                         contentDescription = if (notice.isRead) "Mark as unread" else "Mark as read",
-                        tint = if (notice.isRead) Color.Gray else MaterialTheme.colorScheme.primary,
+                        tint = if (notice.isRead)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun NoticeScreenPreview() {
-    PhysicsHubTheme {
-        NoticeScreen(navController = rememberNavController())
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun NoticeListCardPreview() {
-    PhysicsHubTheme {
-        NoticeListCard(
-            notice = mockNotices[0],
-            onClick = {},
-            onToggleReadState = {}
-        )
     }
 }

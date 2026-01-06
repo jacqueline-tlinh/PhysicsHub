@@ -11,12 +11,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.physicshub.ui.navigation.Destinations
+import com.example.physicshub.ui.theme.extendedColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +59,6 @@ fun ExamArchiveRootScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // Search bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -129,7 +128,7 @@ private fun DivisionCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE3F2F0)
+            containerColor = MaterialTheme.extendedColors.examArchiveBlue
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -140,7 +139,8 @@ private fun DivisionCard(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(

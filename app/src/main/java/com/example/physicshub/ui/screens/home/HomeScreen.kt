@@ -50,6 +50,7 @@ import com.example.physicshub.ui.screens.exams.archive.ExamArchiveViewModel
 import com.example.physicshub.ui.screens.notices.Notice
 import com.example.physicshub.ui.screens.notices.NoticeCategory
 import com.example.physicshub.ui.screens.notices.NoticeRepository
+import com.example.physicshub.ui.screens.notices.NoticeViewModel
 import com.example.physicshub.ui.screens.notices.mockNotices
 import com.example.physicshub.ui.theme.ThemeViewModel
 import com.example.physicshub.ui.theme.extendedColors
@@ -57,21 +58,23 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 
+// Thay đổi function signature của HomeScreen
 @Composable
 fun HomeScreen(
     navController: NavController,
     examViewModel: ExamArchiveViewModel = viewModel(),
     eventViewModel: EventViewModel = viewModel(),
-    themeViewModel: ThemeViewModel = viewModel()
+    themeViewModel: ThemeViewModel = viewModel(),
+    noticeViewModel: NoticeViewModel = viewModel()  // ✅ THÊM PARAMETER NÀY
 ) {
     val context = LocalContext.current
-    val repository = remember { NoticeRepository.getInstance(context) }
     val languageManager = remember { LanguageManager.getInstance(context) }
     val authRepository = remember { AuthRepository.getInstance(context) }
     val scope = rememberCoroutineScope()
 
-    val cachedNotices by repository.cachedNotices.collectAsState(initial = mockNotices)
-    val readIds by repository.readNoticeIds.collectAsState(initial = emptySet())
+    // ✅ LẤY NOTICES TỪ VIEWMODEL THAY VÌ REPOSITORY TRỰC TIẾP
+    val notices by noticeViewModel.notices.collectAsState()
+
     val currentLanguage by languageManager.currentLanguage.collectAsState(initial = Language.ENGLISH)
     val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 
@@ -80,10 +83,6 @@ fun HomeScreen(
 
     // Profile menu state
     var showProfileMenu by remember { mutableStateOf(false) }
-
-    val notices = cachedNotices.map { notice ->
-        notice.copy(isRead = readIds.contains(notice.id))
-    }
 
     var newestUploads by remember { mutableStateOf<List<ExamPaper>>(emptyList()) }
     val upcomingEvents by eventViewModel.upcomingEvents.collectAsState()
@@ -133,10 +132,15 @@ fun HomeScreen(
                     }
                 )
 
+                // ✅ TRUYỀN noticeViewModel VÀO
                 NoticeBoardSection(
                     notices = notices.take(4),
                     onViewMoreClick = { navController.navigate("notices") },
-                    onNoticeClick = { navController.navigate("notices") }
+                    onNoticeClick = { notice ->
+                        // Mark as read when clicked from home
+                        noticeViewModel.markAsRead(notice.id)
+                        navController.navigate("notices")
+                    }
                 )
 
                 NewestExamUploadsSection(
@@ -154,7 +158,7 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 72.dp) // Adjust based on your top bar height
+                    .padding(top = 72.dp)
             ) {
                 ProfileMenuDrawer(
                     isVisible = showProfileMenu,
@@ -174,6 +178,7 @@ fun HomeScreen(
         }
     }
 }
+
 
 @Composable
 fun UpcomingEventsSection(

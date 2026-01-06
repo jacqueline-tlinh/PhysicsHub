@@ -31,11 +31,12 @@ import com.example.physicshub.ui.screens.exams.upload.ExamUploadScreen
 import com.example.physicshub.ui.screens.home.HomeScreen
 import com.example.physicshub.ui.screens.login.LoginScreen
 import com.example.physicshub.ui.screens.notices.NoticeScreen
+import com.example.physicshub.ui.screens.notices.NoticeViewModel
 import com.example.physicshub.ui.theme.ThemeViewModel
 
 @Composable
 fun PhysicsHubNavGraph(
-    themeViewModel: ThemeViewModel  // ✅ THÊM PARAMETER NÀY
+    themeViewModel: ThemeViewModel
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -46,7 +47,6 @@ fun PhysicsHubNavGraph(
 
     // Show loading screen while checking auth state
     if (isLoggedIn == null) {
-        // Simple loading screen
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -63,8 +63,9 @@ fun PhysicsHubNavGraph(
         Destinations.Login.route
     }
 
-    // Shared EventViewModel
+    // ✅ SHARED VIEWMODELS
     val eventViewModel: EventViewModel = viewModel()
+    val noticeViewModel: NoticeViewModel = viewModel()  // ✅ THÊM SHARED NOTICE VIEWMODEL
 
     PhysicsHubScaffold(navController = navController) { padding ->
 
@@ -88,7 +89,8 @@ fun PhysicsHubNavGraph(
                 HomeScreen(
                     navController = navController,
                     eventViewModel = eventViewModel,
-                    themeViewModel = themeViewModel
+                    themeViewModel = themeViewModel,
+                    noticeViewModel = noticeViewModel  // ✅ TRUYỀN SHARED VIEWMODEL
                 )
             }
 
@@ -119,9 +121,12 @@ fun PhysicsHubNavGraph(
             }
 
             composable(Destinations.Notices.route) {
-                NoticeScreen(navController)
+                // ✅ TRUYỀN SHARED VIEWMODEL
+                NoticeScreen(
+                    navController = navController,
+                    viewModel = noticeViewModel
+                )
             }
-
 
             composable(Destinations.Exams.route) {
                 ExamHomeScreen(navController)

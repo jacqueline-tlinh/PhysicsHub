@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import java.time.LocalTime
@@ -30,6 +31,21 @@ class EventViewModel : ViewModel() {
             } else {
                 eventsList.filter { it.date == date }.sortedBy { it.time }
             }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // Upcoming events - filtered in ViewModel for Home Screen
+    val upcomingEvents: StateFlow<List<Event>> = _events
+        .map { eventsList ->
+            val today = LocalDate.now()
+            eventsList
+                .filter { it.date >= today }
+                .sortedWith(compareBy({ it.date }, { it.time }))
+                .take(10) // Limit to 10 most recent upcoming events
         }
         .stateIn(
             scope = viewModelScope,

@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">PhysicsHub</string>
+    <!-- App Name -->
+    <string name="app_name">Physics Hub</string>
+
     <!-- Common Actions -->
     <string name="action_create">Create</string>
     <string name="action_delete">Delete</string>
@@ -18,6 +20,8 @@
     <string name="no_events">No events yet</string>
     <string name="no_events_on_date">No events on this date</string>
     <string name="create_event_description">Create Event</string>
+    <string name="no_upcoming_events">No upcoming events</string>
+    <string name="upcoming_events_description">View upcoming events</string>
 
     <!-- Calendar -->
     <string name="day_sunday">Sun</string>

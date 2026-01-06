@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun EventCreateScreen(
     navController: NavController,
-    viewModel: EventViewModel = viewModel()
+    viewModel: EventViewModel = viewModel()  // Shared ViewModel
 ) {
     var eventName by remember { mutableStateOf("") }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }

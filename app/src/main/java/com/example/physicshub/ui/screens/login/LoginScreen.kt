@@ -66,7 +66,7 @@ fun LoginScreen(
 
             // Description
             Text(
-                text = "Your central hub for announcements, events, bookings, and exam archives.",
+                text = "Your central hub for announcements, events, and exam archives.",
                 style = MaterialTheme.typography.displayLarge.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.SemiBold,

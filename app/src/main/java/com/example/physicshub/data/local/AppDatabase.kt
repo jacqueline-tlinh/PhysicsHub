@@ -4,15 +4,21 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 @Database(
-    entities = [RecentlyViewedEntity::class],
-    version = 1,
+    entities = [
+        RecentlyViewedEntity::class,
+        EventEntity::class
+    ],
+    version = 2,  // Tăng version lên 2
     exportSchema = false
 )
+@TypeConverters(EventConverters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun recentlyViewedDao(): RecentlyViewedDao
+    abstract fun eventDao(): EventDao
 
     companion object {
         @Volatile
@@ -24,7 +30,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "physics_hub_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration() // Để test, production nên dùng migration
+                    .build()
                 INSTANCE = instance
                 instance
             }

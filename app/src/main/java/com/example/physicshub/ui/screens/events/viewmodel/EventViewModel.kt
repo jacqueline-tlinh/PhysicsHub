@@ -1,31 +1,42 @@
 package com.example.physicshub.ui.screens.events.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.physicshub.data.model.Event
-import com.example.physicshub.data.model.EventRegistration
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import com.example.physicshub.data.repository.EventRepository
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
-class EventViewModel : ViewModel() {
+class EventViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _events = MutableStateFlow<List<Event>>(emptyList())
-    val events: StateFlow<List<Event>> = _events.asStateFlow()
+    private val repository = EventRepository.getInstance(application)
 
-    // null = chưa chọn ngày nào (hiển thị tất cả events)
+    // All events từ repository
+    val events: StateFlow<List<Event>> = repository.allEvents
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // Upcoming events cho Home Screen
+    val upcomingEvents: StateFlow<List<Event>> = repository.getUpcomingEvents(10)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // Selected date (null = show all events)
     private val _selectedDate = MutableStateFlow<LocalDate?>(null)
     val selectedDate: StateFlow<LocalDate?> = _selectedDate.asStateFlow()
 
-    // Expose computed state để UI subscribe trực tiếp
+    // Events to display based on selected date
     val eventsToDisplay: StateFlow<List<Event>> = _selectedDate
-        .combine(_events) { date, eventsList ->
+        .combine(events) { date, eventsList ->
             if (date == null) {
                 eventsList.sortedBy { it.date }
             } else {
@@ -38,98 +49,41 @@ class EventViewModel : ViewModel() {
             initialValue = emptyList()
         )
 
-    // Upcoming events - filtered in ViewModel for Home Screen
-    val upcomingEvents: StateFlow<List<Event>> = _events
-        .map { eventsList ->
-            val today = LocalDate.now()
-            eventsList
-                .filter { it.date >= today }
-                .sortedWith(compareBy({ it.date }, { it.time }))
-                .take(10) // Limit to 10 most recent upcoming events
-        }
+    // Dates with events
+    val datesWithEvents: StateFlow<Set<LocalDate>> = events
+        .map { eventsList -> eventsList.map { it.date }.toSet() }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
+            initialValue = emptySet()
         )
 
-    private val _registrations = MutableStateFlow<List<EventRegistration>>(emptyList())
-    val registrations: StateFlow<List<EventRegistration>> = _registrations.asStateFlow()
-
+    // UI state
     private val _showSuccessMessage = MutableStateFlow(false)
     val showSuccessMessage: StateFlow<Boolean> = _showSuccessMessage.asStateFlow()
 
-    // Expand/Collapse states
     private val _isCalendarExpanded = MutableStateFlow(true)
     val isCalendarExpanded: StateFlow<Boolean> = _isCalendarExpanded.asStateFlow()
 
     private val _isEventListExpanded = MutableStateFlow(true)
     val isEventListExpanded: StateFlow<Boolean> = _isEventListExpanded.asStateFlow()
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
     init {
-        // Add sample data for testing
-        addSampleEvents()
+        // Initialize sample data nếu cần
+        viewModelScope.launch {
+            repository.initializeSampleData()
+        }
     }
 
-    private fun addSampleEvents() {
-        // Sample events with English content
-        val sampleEvents = listOf(
-            Event(
-                name = "AI & Machine Learning Seminar",
-                date = LocalDate.now().plusDays(2),
-                time = LocalTime.of(14, 0),
-                location = "Room A101",
-                note = "Guest speaker from Google AI Research. Topics include deep learning and neural networks."
-            ),
-            Event(
-                name = "Quantum Physics Workshop",
-                date = LocalDate.now().plusDays(5),
-                time = LocalTime.of(10, 30),
-                location = "Physics Lab Building",
-                note = "Hands-on experiments with quantum mechanics principles. Bring your lab notebook."
-            ),
-            Event(
-                name = "Career Fair 2025",
-                date = LocalDate.now(),
-                time = LocalTime.of(9, 0),
-                location = "Main Hall",
-                note = "Meet recruiters from top tech companies. Prepare your resume and portfolio."
-            ),
-            Event(
-                name = "Mathematics Competition",
-                date = LocalDate.now().plusDays(1),
-                time = LocalTime.of(13, 0),
-                location = "Room B205",
-                note = "Regional mathematics olympiad qualifying round. Registration required."
-            ),
-            Event(
-                name = "Full-Stack Coding Bootcamp",
-                date = LocalDate.now().plusDays(3),
-                time = LocalTime.of(15, 30),
-                location = "Computer Lab 3",
-                note = "Learn React, Node.js, and MongoDB. Beginners welcome. Laptops required."
-            )
-        )
-        _events.value = sampleEvents
-    }
-
+    // Select date
     fun selectDate(date: LocalDate?) {
         _selectedDate.value = date
     }
 
-    fun getEventsForDate(date: LocalDate?): List<Event> {
-        // Deprecated: Sử dụng eventsToDisplay StateFlow thay thế
-        return if (date == null) {
-            _events.value.sortedBy { it.date }
-        } else {
-            _events.value.filter { it.date == date }.sortedBy { it.time }
-        }
-    }
-
-    fun getDatesWithEvents(): Set<LocalDate> {
-        return _events.value.map { it.date }.toSet()
-    }
-
+    // Create event
     fun createEvent(
         name: String,
         date: LocalDate,
@@ -137,55 +91,65 @@ class EventViewModel : ViewModel() {
         location: String,
         note: String
     ) {
-        val newEvent = Event(
-            name = name,
-            date = date,
-            time = time,
-            location = location,
-            note = note
-        )
-        _events.value = _events.value + newEvent
-    }
-
-    fun deleteEvent(eventId: String) {
-        _events.value = _events.value.filter { it.id != eventId }
-
-        // Xóa các registrations liên quan đến event này
-        _registrations.value = _registrations.value.filter { it.eventId != eventId }
-    }
-
-    fun registerForEvent(eventId: String, userName: String) {
-        val registration = EventRegistration(
-            eventId = eventId,
-            userName = userName
-        )
-        _registrations.value = _registrations.value + registration
-
-        // Update event with registered user
-        _events.value = _events.value.map { event ->
-            if (event.id == eventId) {
-                event.copy(registeredUsers = event.registeredUsers + userName)
-            } else {
-                event
+        viewModelScope.launch {
+            val result = repository.createEvent(name, date, time, location, note)
+            if (result.isFailure) {
+                _errorMessage.value = result.exceptionOrNull()?.message
             }
         }
-
-        _showSuccessMessage.value = true
     }
 
+    // Delete event
+    fun deleteEvent(eventId: String) {
+        viewModelScope.launch {
+            val result = repository.deleteEvent(eventId)
+            if (result.isFailure) {
+                _errorMessage.value = result.exceptionOrNull()?.message
+            }
+        }
+    }
+
+    // Register for event
+    fun registerForEvent(eventId: String, userName: String) {
+        viewModelScope.launch {
+            val result = repository.registerForEvent(eventId, userName)
+            if (result.isSuccess) {
+                _showSuccessMessage.value = true
+            } else {
+                _errorMessage.value = result.exceptionOrNull()?.message
+            }
+        }
+    }
+
+    // Get event by ID
     fun getEventById(eventId: String): Event? {
-        return _events.value.find { it.id == eventId }
+        return events.value.find { it.id == eventId }
     }
 
+    // Reset success message
     fun resetSuccessMessage() {
         _showSuccessMessage.value = false
     }
 
+    // Clear error message
+    fun clearErrorMessage() {
+        _errorMessage.value = null
+    }
+
+    // Toggle calendar expanded
     fun toggleCalendarExpanded() {
         _isCalendarExpanded.value = !_isCalendarExpanded.value
     }
 
+    // Toggle event list expanded
     fun toggleEventListExpanded() {
         _isEventListExpanded.value = !_isEventListExpanded.value
+    }
+
+    // Clear all events (for testing)
+    fun clearAllEvents() {
+        viewModelScope.launch {
+            repository.clearAllEvents()
+        }
     }
 }

@@ -18,8 +18,6 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,8 +47,7 @@ import com.example.physicshub.ui.screens.events.viewmodel.EventViewModel
 import com.example.physicshub.ui.screens.exams.archive.ExamArchiveViewModel
 import com.example.physicshub.ui.screens.notices.Notice
 import com.example.physicshub.ui.screens.notices.NoticeCategory
-import com.example.physicshub.ui.screens.notices.NoticeRepository
-import com.example.physicshub.ui.screens.notices.mockNotices
+import com.example.physicshub.ui.screens.notices.NoticeViewModel
 import com.example.physicshub.ui.theme.ThemeViewModel
 import com.example.physicshub.ui.theme.extendedColors
 import kotlinx.coroutines.delay
@@ -61,32 +58,26 @@ import java.time.format.DateTimeFormatter
 fun HomeScreen(
     navController: NavController,
     examViewModel: ExamArchiveViewModel = viewModel(),
-    eventViewModel: EventViewModel = viewModel(),
-    themeViewModel: ThemeViewModel = viewModel()
+    sharedEventViewModel: EventViewModel = viewModel(), // Shared ViewModel
+    themeViewModel: ThemeViewModel = viewModel(),
+    noticeViewModel: NoticeViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val repository = remember { NoticeRepository.getInstance(context) }
     val languageManager = remember { LanguageManager.getInstance(context) }
     val authRepository = remember { AuthRepository.getInstance(context) }
     val scope = rememberCoroutineScope()
 
-    val cachedNotices by repository.cachedNotices.collectAsState(initial = mockNotices)
-    val readIds by repository.readNoticeIds.collectAsState(initial = emptySet())
+    val notices by noticeViewModel.notices.collectAsState()
     val currentLanguage by languageManager.currentLanguage.collectAsState(initial = Language.ENGLISH)
     val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 
-    // Get current user from AuthRepository
     val currentUser by authRepository.getCurrentUser().collectAsState(initial = null)
-
-    // Profile menu state
     var showProfileMenu by remember { mutableStateOf(false) }
 
-    val notices = cachedNotices.map { notice ->
-        notice.copy(isRead = readIds.contains(notice.id))
-    }
-
     var newestUploads by remember { mutableStateOf<List<ExamPaper>>(emptyList()) }
-    val upcomingEvents by eventViewModel.upcomingEvents.collectAsState()
+
+    // Sử dụng shared ViewModel
+    val upcomingEvents by sharedEventViewModel.upcomingEvents.collectAsState()
 
     LaunchedEffect(Unit) {
         examViewModel.getNewestUploads(3) { uploads ->
@@ -136,7 +127,10 @@ fun HomeScreen(
                 NoticeBoardSection(
                     notices = notices.take(4),
                     onViewMoreClick = { navController.navigate("notices") },
-                    onNoticeClick = { navController.navigate("notices") }
+                    onNoticeClick = { notice ->
+                        noticeViewModel.markAsRead(notice.id)
+                        navController.navigate("notices")
+                    }
                 )
 
                 NewestExamUploadsSection(
@@ -149,12 +143,11 @@ fun HomeScreen(
             }
         }
 
-        // Profile Menu Drawer (positioned below top bar)
         if (showProfileMenu) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 72.dp) // Adjust based on your top bar height
+                    .padding(top = 72.dp)
             ) {
                 ProfileMenuDrawer(
                     isVisible = showProfileMenu,
@@ -467,7 +460,10 @@ fun NoticeBoardSection(
 ) {
     val pagerState = rememberPagerState(pageCount = { notices.size })
 
-    LaunchedEffect(pagerState) {
+    // ✅ FIX: Chỉ chạy auto-scroll khi có notices
+    LaunchedEffect(pagerState, notices.size) {
+        if (notices.isEmpty()) return@LaunchedEffect // Thoát sớm nếu không có notices
+
         while (true) {
             delay(autoScrollIntervalMs)
             val nextPage = (pagerState.currentPage + 1) % notices.size
@@ -505,25 +501,59 @@ fun NoticeBoardSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(end = 56.dp),
-            pageSpacing = 8.dp
-        ) { page ->
-            NoticeSliderCard(
-                notice = notices[page],
-                onClick = { onNoticeClick(notices[page]) }
+        // ✅ FIX: Hiển thị placeholder khi không có notices
+        if (notices.isEmpty()) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .clickable(onClick = onViewMoreClick),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                        Text(
+                            text = "No notices available",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        } else {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(end = 56.dp),
+                pageSpacing = 8.dp
+            ) { page ->
+                NoticeSliderCard(
+                    notice = notices[page],
+                    onClick = { onNoticeClick(notices[page]) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            PagerIndicator(
+                pageCount = notices.size,
+                currentPage = pagerState.currentPage,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        PagerIndicator(
-            pageCount = notices.size,
-            currentPage = pagerState.currentPage,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
     }
 }
 

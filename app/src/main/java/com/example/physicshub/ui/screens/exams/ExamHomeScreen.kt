@@ -88,20 +88,20 @@ fun ExamHomeScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         // Bottom CTA
-        Button(
-            onClick = {
-                // TODO: suggestion/request navigation
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(50),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
-        ) {
-            Text(
-                text = "Can't find an exam you need?\nRequest it here.",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
-        }
+//        Button(
+//            onClick = {
+//                // TODO: suggestion/request navigation
+//            },
+//            modifier = Modifier.fillMaxWidth(),
+//            shape = RoundedCornerShape(50),
+//            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+//        ) {
+//            Text(
+//                text = "Can't find an exam you need?\nRequest it here.",
+//                style = MaterialTheme.typography.bodyMedium,
+//                textAlign = TextAlign.Center
+//            )
+//        }
     }
 }
 

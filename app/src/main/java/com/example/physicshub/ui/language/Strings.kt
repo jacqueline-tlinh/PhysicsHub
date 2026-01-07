@@ -50,7 +50,7 @@ object Strings {
     val examArchive: String
         @Composable @ReadOnlyComposable
         get() = currentStrings.examArchive.ifEmpty {
-            if (LocalLanguage.current == Language.ENGLISH) defaultEnglishStrings.upcomingEvent
+            if (LocalLanguage.current == Language.ENGLISH) defaultEnglishStrings.examArchive
             else defaultVietnameseStrings.examArchive
         }
 
